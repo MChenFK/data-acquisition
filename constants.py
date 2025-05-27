@@ -5,17 +5,24 @@ GREEN = 'g'
 BLUE = 'b'
 PURPLE = "purple"
 
+ORANGE = 'orange'
+CYAN = 'cyan'
+MAGENTA = 'magenta'
+PINK = 'PINK'
+
+GRAY = 'gray'
+
 WHITE = 'w'
 BLACK = 'k'
 
 ITEMS = [
-    "rate (A/sec)",
+    "deposition rate (A/sec)",
     "power (%)",
     "pressure (mTorr)",
     "temperature (C)",
-    "crystal ()",
-    "anode current (I)",
-    "neutralization current (I)",
+    "crystal (A/sec)",
+    "anode current (amp)",
+    "neutralization current (amp)",
     "gas flow ()"
 ]
 
