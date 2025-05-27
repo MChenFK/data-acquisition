@@ -113,21 +113,26 @@ class ADS1115Reader(QtWidgets.QMainWindow):
                 self.y_data[i] = self.y_data[i][-max_points:]
 
     def closeEvent(self, event):
+        if self.timer.isActive():
+            self.timer.stop()
         if not self.csv_file.closed:
             print("Closing CSV file on window close...")
             self.csv_file.close()
         event.accept()
 
     def keyPressEvent(self, event):
-    if event.key() == QtCore.Qt.Key_Escape:
-        self.showNormal()  # Exit fullscreen
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.showNormal()  # Exit fullscreen
 
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     reader = ADS1115Reader()
-    reader.showFullScreen()
+    reader.show()
+    reader.showMaximized()
+
     sys.exit(app.exec())
 
 

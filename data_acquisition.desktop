@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=40 Inch Data Acquisition
+Comment=Launches 40-inch DAQ tool
+Exec=/home/mebryan/ADS1115/run_data_acquisition.sh
+Icon=/home/mebryan/ADS1115/Icon.png
+Terminal=false
+Type=Application
+Categories=Utility;
