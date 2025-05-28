@@ -20,7 +20,7 @@ ITEMS = [
     "power (%)",
     "pressure (mTorr)",
     "temperature (C)",
-    "crystal (A/sec)",
+    "crystal (kA)",
     "anode current (amp)",
     "neutralization current (amp)",
     "gas flow ()"
