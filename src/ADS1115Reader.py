@@ -11,6 +11,9 @@ import busio
 import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 
+from Adafruit_MAX31856 import MAX31856
+import Adafruit_GPIO.SPI as SPI
+
 from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
 import qdarktheme
@@ -24,6 +27,11 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         i2c = busio.I2C(board.SCL, board.SDA)
         self.ads = ADS.ADS1115(i2c)
 
+        # Initialize MAX31856 Thermocouple
+        SPI_PORT = 0
+        SPI_DEVICE = 0
+        self.temp_sensor = MAX31856(hardware_spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+
         self.chan0 = AnalogIn(self.ads, ADS.P0)
         self.chan1 = AnalogIn(self.ads, ADS.P1)
         self.chan2 = AnalogIn(self.ads, ADS.P2)
@@ -33,7 +41,7 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         self.chan4 = lambda: self.chan0.voltage + 0.1
         self.chan5 = lambda: self.chan1.voltage + 0.1
         self.chan6 = lambda: self.chan2.voltage + 0.1
-        self.chan7 = lambda: self.chan3.voltage + 0.1
+        #self.chan7 = lambda: self.chan3.voltage + 0.1
 
         # Set up CSV file
         self.csv_file = open('ads1115_data.csv', mode='w', newline='')
@@ -108,16 +116,22 @@ class ADS1115Reader(QtWidgets.QMainWindow):
             QtWidgets.QApplication.quit()
             return
 
-        # Read voltages
-        voltages = [
+        try:
+            temperature = self.temp_sensor.read_temp_c()
+        except Exception as e:
+            print(f"Error reading temperature: {e}")
+            temperature = float('nan')
+
+        # Read inputs
+        inputs = [
             self.chan0.voltage,
             self.chan1.voltage,
             self.chan2.voltage,
+            temperature,
             self.chan3.voltage,
             self.chan4(),
             self.chan5(),
-            self.chan6(),
-            self.chan7()
+            self.chan6()
         ]
 
         current_time = time.time() - self.start_time
@@ -125,19 +139,19 @@ class ADS1115Reader(QtWidgets.QMainWindow):
 
         # Append data and update plots
         for i in range(8):
-            self.y_data[i].append(voltages[i])
+            self.y_data[i].append(inputs[i])
             self.curves[i].setData(self.x_data, self.y_data[i])
 
         # Write to CSV
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-        self.csv_writer.writerow([timestamp] + voltages)
+        self.csv_writer.writerow([timestamp] + inputs)
         self.csv_file.flush()
 
         # Keep last N points
-        max_points = 500
+        max_points = 100
         if len(self.x_data) > max_points:
             self.x_data = self.x_data[-max_points:]
-            for i in range(4):
+            for i in range(8):
                 self.y_data[i] = self.y_data[i][-max_points:]
 
     def closeEvent(self, event):
