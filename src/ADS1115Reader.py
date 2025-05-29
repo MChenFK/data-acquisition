@@ -1,5 +1,6 @@
 from constants import *
 
+import os
 import sys
 import time
 import csv
@@ -27,10 +28,12 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         i2c = busio.I2C(board.SCL, board.SDA)
         self.ads = ADS.ADS1115(i2c)
 
+        self.num_plots = len(ITEMS)
+
         # Initialize MAX31856 Thermocouple
         SPI_PORT = 0
         SPI_DEVICE = 0
-        self.temp_sensor = MAX31856(hardware_spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+        self.temp_sensor = MAX31856(hardware_spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE), tc_type=MAX31856.MAX31856_K_TYPE)
 
         self.chan0 = AnalogIn(self.ads, ADS.P0)
         self.chan1 = AnalogIn(self.ads, ADS.P1)
@@ -44,7 +47,15 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         #self.chan7 = lambda: self.chan3.voltage + 0.1
 
         # Set up CSV file
-        self.csv_file = open('ads1115_data.csv', mode='w', newline='')
+        file_path = "data/" + datetime.now().strftime('%Y-%m-%d')
+        temp_path = file_path
+        count = 0
+        while os.path.isfile(temp_path + ".csv"):
+            count += 1
+            temp_path = file_path + " (" + str(count) + ")"
+
+        #self.csv_file = open(temp_path + ".csv", mode='w', newline='')
+        self.csv_file = open("ads1115_data.csv", mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['Timestamp', ITEMS[RATE], ITEMS[POWER], ITEMS[PRESSURE], ITEMS[TEMPERATURE],
         ITEMS[CRYSTAL], ITEMS[ANODE], ITEMS[NEUTRALIZATION], ITEMS[GAS]])
@@ -79,14 +90,14 @@ class ADS1115Reader(QtWidgets.QMainWindow):
 
         self.plots = []
         self.curves = []
-        self.y_data = [[] for _ in range(8)]
+        self.y_data = [[] for _ in range(self.num_plots)]
         self.x_data = []
 
         # Create four separate plot areas
         titles = [ITEMS[RATE], ITEMS[POWER], ITEMS[PRESSURE], ITEMS[TEMPERATURE],
         ITEMS[CRYSTAL], ITEMS[ANODE], ITEMS[NEUTRALIZATION], ITEMS[GAS]]
         colors = [RED, GREEN, BLUE, PURPLE, ORANGE, CYAN, MAGENTA, PINK]
-        for i in range(8):
+        for i in range(self.num_plots):
             row = i // 2
             col = i % 2
             p = self.plot_widget.addPlot(row=row, col=col, title=titles[i])
@@ -138,12 +149,12 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         self.x_data.append(current_time)
 
         # Append data and update plots
-        for i in range(8):
+        for i in range(self.num_plots):
             self.y_data[i].append(inputs[i])
             self.curves[i].setData(self.x_data, self.y_data[i])
 
         # Write to CSV
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.csv_writer.writerow([timestamp] + inputs)
         self.csv_file.flush()
 
@@ -151,7 +162,7 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         max_points = 100
         if len(self.x_data) > max_points:
             self.x_data = self.x_data[-max_points:]
-            for i in range(8):
+            for i in range(num_plots):
                 self.y_data[i] = self.y_data[i][-max_points:]
 
     def closeEvent(self, event):
