@@ -1,12 +1,16 @@
-# Global Imports
-import logging
-import time
-import Adafruit_GPIO
+import Adafruit_GPIO.SPI as SPI
+from Adafruit_MAX31856 import MAX31856
 
-# Local Imports
-from Adafruit_MAX31856 import MAX31856 as MAX31856
+class MAX31856Reader:
+    def __init__(self, spi_port=0, spi_device=0):
+        self.sensor = MAX31856(
+            hardware_spi=SPI.SpiDev(spi_port, spi_device),
+            tc_type=MAX31856.MAX31856_K_TYPE
+        )
 
-# Raspberry Pi hardware SPI configuration.
-SPI_PORT   = 0
-SPI_DEVICE = 0
-sensor = MAX31856(hardware_spi=Adafruit_GPIO.SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+    def read_temperature(self):
+        try:
+            return self.sensor.read_temp_c()
+        except Exception as e:
+            print(f"Error reading temperature: {e}")
+            return float('nan')
