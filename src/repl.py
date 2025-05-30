@@ -1,4 +1,5 @@
 from constants import *
+import config
 
 import os
 import sys
@@ -48,14 +49,18 @@ class ADS1115Reader(QtWidgets.QMainWindow):
 
         # Set up CSV file
         file_path = "data/" + datetime.now().strftime('%Y-%m-%d')
+        rename = config.settings.get("file_name")
+        if rename:
+            file_path = "data/" + rename
+
         temp_path = file_path
-        count = 0
+        count = 1
         while os.path.isfile(temp_path + ".csv"):
             count += 1
             temp_path = file_path + " (" + str(count) + ")"
 
-        #self.csv_file = open(temp_path + ".csv", mode='w', newline='')
-        self.csv_file = open("ads1115_data.csv", mode='w', newline='')
+        self.csv_file = open(temp_path + ".csv", mode='w', newline='')
+        #self.csv_file = open("ads1115_data.csv", mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['Timestamp', ITEMS[RATE], ITEMS[POWER], ITEMS[PRESSURE], ITEMS[TEMPERATURE],
         ITEMS[CRYSTAL], ITEMS[ANODE], ITEMS[NEUTRALIZATION], ITEMS[GAS]])
@@ -115,8 +120,10 @@ class ADS1115Reader(QtWidgets.QMainWindow):
         # Timer
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        refresh = REFRESH_SECONDS * 1000
-        #self.timer.start(refresh)
+        self.refresh = REFRESH_SECONDS * 1000
+        if config.settings.get("refresh_interval"):
+            self.refresh = int(config.settings.get("refresh_interval")) * 1000
+        #self.timer.start(self.refresh)
 
 
     def update(self):
@@ -187,7 +194,7 @@ class ADS1115Reader(QtWidgets.QMainWindow):
             if not self.timer_started:
                 self.start_time = time.time()
                 self.timer_started = True
-            self.timer.start(REFRESH_SECONDS * 1000)
+            self.timer.start(self.refresh)
             self.toggle_button.setText("Stop")
             self.collection_active = True
             

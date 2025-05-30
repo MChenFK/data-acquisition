@@ -1,4 +1,6 @@
 from ADS1115Reader import *
+from settings import SettingsDialog
+import config
 
 reader = None
 
@@ -15,11 +17,17 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    reader = ADS1115Reader()
-    reader.show()
-    reader.showMaximized()
+    settings_dialog = SettingsDialog()
+    if settings_dialog.exec():
+        config.settings = settings_dialog.get_settings()
+        reader = ADS1115Reader()
+        reader.show()
+        reader.showMaximized()
 
-    sys.exit(app.exec())
+        sys.exit(app.exec())
+    else:
+        print("User exited settings menu")
+        sys.exit(0)
 
 
 if __name__ == "__main__":

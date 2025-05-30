@@ -1,4 +1,4 @@
-REFRESH_SECONDS = 5
+REFRESH_SECONDS = 10
 
 RED = 'r'
 GREEN = 'g'
@@ -23,7 +23,7 @@ ITEMS = [
     "crystal (kA)",
     "anode current (amp)",
     "neutralization current (amp)",
-    "gas flow ()"
+    "gas flow (sccm)"
 ]
 
 RATE = 0
