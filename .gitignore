@@ -3,3 +3,4 @@ ads1115_data.csv
 data_acquisition_venv
 data
 virtual_serial_test
+/src/ADS1256_test.py

@@ -8,7 +8,7 @@ from datetime import datetime
 from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
 
-from devices.ads1115_reader import ADS1115Reader
+from devices.ads1256_reader import ADS1256Reader
 from devices.max31856_reader import MAX31856Reader
 
 class repl(QtWidgets.QMainWindow):
@@ -17,7 +17,7 @@ class repl(QtWidgets.QMainWindow):
         self.running = True
 
         # Initialize readers
-        self.ads_reader = ADS1115Reader()
+        self.ads_reader = ADS1256Reader()
         self.temp_reader = MAX31856Reader()
 
         self.num_plots = len(ITEMS)
@@ -38,7 +38,8 @@ class repl(QtWidgets.QMainWindow):
             count += 1
             temp_path = file_path + f" ({count})"
 
-        self.csv_file = open(data_dir + temp_path + ".csv", mode='w', newline='')
+        #self.csv_file = open(data_dir + temp_path + ".csv", mode='w', newline='')
+        self.csv_file = open("data_acquired.csv", mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['Timestamp'] + ITEMS)
 
@@ -99,9 +100,10 @@ class repl(QtWidgets.QMainWindow):
             ads_values[2],
             temperature,
             ads_values[3],
-            ads_values[0] + 0.1,
-            ads_values[1] + 0.1,
-            ads_values[2] + 0.1
+            ads_values[4],
+            ads_values[5],
+            ads_values[6]
+            #ads_values[7]
         ]
 
         current_time = time.time() - self.start_time
