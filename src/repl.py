@@ -132,6 +132,7 @@ class repl(QtWidgets.QMainWindow):
             if not self.timer_started:
                 self.start_time = time.time()
                 self.timer_started = True
+            self.update()
             self.timer.start(self.refresh)
             self.toggle_button.setText("Stop")
             self.collection_active = True
