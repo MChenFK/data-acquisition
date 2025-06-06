@@ -10,7 +10,7 @@
 1. Install requirements
 
 ## Requirements:
-- (See requirements.txt)
+### (See requirements.txt)
 - RPi.GPIO
 - Adafruit_GPIO
 - Adafruit_MAX31856
