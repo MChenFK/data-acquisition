@@ -1,27 +1,29 @@
 import serial
 import time
 from constants import *
+from inficon_constants import *
 
-# Constants
-ACK = b'\x06'
-NAK = b'\x15'
-TIMEOUT = 8  # seconds
+class InficonReader:
+    def __init__(self):
 
-# Open serial connection
-ser = serial.Serial(
-    #port='/tmp/ttyV0',
-    port='/dev/ttyUSB0',
-    baudrate=9600,
-    bytesize=serial.EIGHTBITS,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    timeout=1  # read timeout per call
-)
+        # Open serial connection
+        self.ser = serial.Serial(
+            #port='/tmp/ttyV0',
+            port='/dev/ttyUSB0',
+            baudrate=9600,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            timeout=1  # read timeout per call
+        )
 
-def send_command(cmd):
+        self.last_state = ""
+        self.current_layer = 1
+
+def send_command(self, cmd):
     """Send command, wait for ACK/NAK, and print response if available."""
     full_command = cmd.encode('ascii') + ACK
-    ser.write(full_command)
+    self.ser.write(full_command)
     logging.info(f"Sent: {cmd} + ACK")
 
     response = b''
@@ -29,8 +31,8 @@ def send_command(cmd):
     got_ack = False
 
     while True:
-        if ser.in_waiting > 0:
-            byte = ser.read(1)
+        if self.ser.in_waiting > 0:
+            byte = self.ser.read(1)
             if not got_ack:
                 if byte == ACK:
                     logging.info("Received: ACK")
@@ -55,3 +57,8 @@ def send_command(cmd):
     decoded_response = response.decode('ascii', errors='replace').strip()
     logging.info(f"Received response: {decoded_response}")
     return decoded_response if decoded_response else "ACK Received (no response data)"
+
+def get_inficon_data(self):
+    inficon_data = []
+    return inficon_data
+    
