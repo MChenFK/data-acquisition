@@ -2,7 +2,7 @@ import serial
 import time
 import logging
 from constants import *
-from inficon_constants import *
+from devices.inficon_constants import *
 
 class InficonReader:
     def __init__(self):
@@ -15,8 +15,9 @@ class InficonReader:
 
         # Open serial connection
         self.ser = serial.Serial(
-            #port='/tmp/ttyV0',
-            port='/dev/ttyUSB0',
+            # Virtual serial port for testing
+            port='/tmp/ttyV0',
+            #port='/dev/ttyUSB0',
             baudrate=9600,
             bytesize=serial.EIGHTBITS,
             parity=serial.PARITY_NONE,

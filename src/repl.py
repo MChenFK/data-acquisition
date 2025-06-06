@@ -10,6 +10,7 @@ import pyqtgraph as pg
 
 from devices.ads1256_reader import ADS1256Reader
 from devices.max31856_reader import MAX31856Reader
+from devices.inficon_serial_reader import InficonReader
 
 class repl(QtWidgets.QMainWindow):
     def __init__(self):
@@ -19,6 +20,7 @@ class repl(QtWidgets.QMainWindow):
         # Initialize readers
         self.ads_reader = ADS1256Reader()
         self.temp_reader = MAX31856Reader()
+        self.inficon_reader = InficonReader()
 
         self.num_plots = len(ITEMS)
 
