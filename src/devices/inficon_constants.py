@@ -3,7 +3,7 @@
 # Constants
 ACK = b'\x06'
 NAK = b'\x15'
-TIMEOUT = 8  # seconds
+TIMEOUT = 0.2  # seconds
 
 #7-33
 STATE = [

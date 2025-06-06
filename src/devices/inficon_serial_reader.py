@@ -1,10 +1,17 @@
 import serial
 import time
+import logging
 from constants import *
 from inficon_constants import *
 
 class InficonReader:
     def __init__(self):
+
+        logging.basicConfig(
+            filename='serial_comm.log',
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
 
         # Open serial connection
         self.ser = serial.Serial(
@@ -21,7 +28,7 @@ class InficonReader:
         self.current_layer = 1
 
 def send_command(self, cmd):
-    """Send command, wait for ACK/NAK, and print response if available."""
+    # Send command, wait for ACK/NAK, and print response if available
     full_command = cmd.encode('ascii') + ACK
     self.ser.write(full_command)
     logging.info(f"Sent: {cmd} + ACK")
