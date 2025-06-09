@@ -95,17 +95,27 @@ class repl(QtWidgets.QMainWindow):
 
         ads_values = self.ads_reader.read_all()
         temperature = self.temp_reader.read_temperature()
+        inficon_data = self.inficon_reader.get_inficon_data()
+
+        if inficon_data[0] == "NAK":
+            print("Received NAK — pausing data collection")
+            self.timer.stop()
+            self.toggle_button.setText("Start")
+            self.collection_active = False
+            return
+        rate = float(inficon_data[0])
+        power = float(inficon_data[1])
+        crystal = float(inficon_data[2])
 
         inputs = [
+            rate,
+            power,
             ads_values[0],
+            temperature,
+            crystal,
             ads_values[1],
             ads_values[2],
-            temperature,
-            ads_values[3],
-            ads_values[4],
-            ads_values[5],
-            ads_values[6]
-            #ads_values[7]
+            ads_values[3]
         ]
 
         current_time = time.time() - self.start_time
