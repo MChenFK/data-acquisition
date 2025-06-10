@@ -16,6 +16,8 @@ class repl(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.running = True
+        self.updating = True
+        self.update_stop = 0
 
         # Initialize readers
         self.ads_reader = ADS1256Reader()
@@ -23,6 +25,16 @@ class repl(QtWidgets.QMainWindow):
         self.inficon_reader = InficonReader()
 
         self.num_plots = len(ITEMS)
+
+        # Save data when not updating
+        self.rate = 0.0
+        self.power = 0.0
+        self.pressure = 0.0
+        self.temperature = 0.0
+        self.crystal = 0.0
+        self.anode = 0.0
+        self.neutralization = 0.0
+        self.gas_flow = 0.0
 
         # Setup CSV file
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -97,26 +109,54 @@ class repl(QtWidgets.QMainWindow):
         temperature = self.temp_reader.read_temperature()
         inficon_data = self.inficon_reader.get_inficon_data()
 
-        if inficon_data[0] == "NAK":
+        if inficon_data[0] == "NAK" and self.updating:
             print("Received NAK — pausing data collection")
-            self.timer.stop()
-            self.toggle_button.setText("Start")
-            self.collection_active = False
-            return
-        rate = float(inficon_data[0])
-        power = float(inficon_data[1])
-        crystal = float(inficon_data[2])
+            self.updating = False
+            self.update_stop = time.time()
+
+            # self.timer.stop()
+            # self.toggle_button.setText("Start")
+            # self.collection_active = False
+
+            # QtCore.QTimer.singleShot(120_000, self.resume_collection)
+            #return
+        
+        if not self.updating:
+            elapsed = time.time() - self.update_stop
+            if elapsed >= 120:
+                self.updating = True
+
+        if self.updating:
+            self.rate = rate = float(inficon_data[0])
+            self.power = power = float(inficon_data[1])
+            self.pressure = pressure = 0.0
+            self.temperature = temperature
+            self.crystal = crystal = float(inficon_data[2])
+            self.anode = anode = 0.0
+            self.neutralization = neutralization = 0.0
+            self.gas_flow = gas_flow = 0.0
+        else:
+            rate = self.rate
+            power = self.power
+            pressure = self.pressure
+            self.temperature = temperature
+            crystal = self.crystal
+            anode = self.anode
+            neutralization = self.neutralization
+            gas_flow = self.gas_flow
 
         inputs = [
             rate,
             power,
-            ads_values[0],
+            pressure,
             temperature,
             crystal,
-            ads_values[1],
-            ads_values[2],
-            ads_values[3]
+            anode,
+            neutralization,
+            gas_flow
         ]
+
+        #print(inputs)
 
         current_time = time.time() - self.start_time
         self.x_data.append(current_time)
@@ -148,6 +188,13 @@ class repl(QtWidgets.QMainWindow):
             self.timer.start(self.refresh)
             self.toggle_button.setText("Stop")
             self.collection_active = True
+
+    def resume_collection(self):
+        if not self.collection_active:
+            print("Resuming data collection after 2-minute pause")
+            self.collection_active = True
+            self.toggle_button.setText("Stop")
+            self.timer.start(self.refresh)
 
     def closeEvent(self, event):
         if self.timer.isActive():

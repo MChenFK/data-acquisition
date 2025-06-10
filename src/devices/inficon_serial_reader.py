@@ -27,7 +27,6 @@ class InficonReader:
 
         self.last_state = ""
         self.current_layer = 1
-        self.inficon_data = []
 
     def send_command(self, cmd):
         # Send command, wait for ACK/NAK, and print response if available
@@ -69,11 +68,12 @@ class InficonReader:
 
     def get_inficon_data(self):
         # rate, power, thickness
-        self.inficon_data = []
         response = self.send_command("SL 0 " + str(self.current_layer))
         if response == "NAK Received":
-            inficon_data.append("NAK")
+            inficon_data = ["NAK"]
+            self.current_layer += 1
             return inficon_data
         inficon_data = response.split()
+        #print(inficon_data)
         return inficon_data
         

@@ -41,5 +41,41 @@ def simulate_device():
             else:
                 time.sleep(0.1)
 
+def simulate_device_2():
+    with serial.Serial(PORT, 9600, timeout=1) as ser:
+        print(f"Listening on {PORT}...")
+        flag = 0
+
+        while True:
+            if ser.in_waiting > 0:
+                data = ser.read(ser.in_waiting)
+                print("Received:", data)
+
+                # Check if command ends with ACK
+                if data.endswith(ACK) and flag < 2:
+                    cmd = data[:-1].decode('ascii', errors='ignore').strip()
+                    print(f"Command received: '{cmd}'")
+
+                    # Example responses based on command
+                    if cmd == "RG 01":
+                        response = "Response to RG 01"
+                        ser.write(response.encode('ascii') + ACK)
+                    elif cmd == "RG 02":
+                        response = "Response to RG 02"
+                        ser.write(response.encode('ascii') + ACK)
+                    elif cmd == "SL 0 1":
+                        response = "3.281  12.900    0.004  23 00:02 01:35 GXXXXXXX  17   1"
+                        ser.write(response.encode('ascii') + ACK)
+                    else:
+                        # Simulate a NAK for unknown commands
+                        ser.write(NAK)
+                    flag += 1
+                else:
+                    print("No ACK found at end of command. Sending NAK.")
+                    ser.write(NAK)
+
+            else:
+                time.sleep(0.1)
+
 if __name__ == "__main__":
-    simulate_device()
+    simulate_device_2()
