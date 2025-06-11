@@ -12,9 +12,9 @@ def simulate_device():
                 data = ser.read(ser.in_waiting)
                 print("Received:", data)
 
-                # Check if command starts with #
-                if data.startswith('#'):
-                    cmd = data[1:].decode('ascii', errors='ignore').strip()
+                # Check if command starts with # and ends with \r
+                if data.startswith('#') and data.endswith('\r'):
+                    cmd = data[1:-1].decode('ascii', errors='ignore').strip()
                     print(f"Command received: '{cmd}'")
 
                     # Example responses based on command
