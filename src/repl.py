@@ -11,6 +11,7 @@ import pyqtgraph as pg
 from devices.ads1256_reader import ADS1256Reader
 from devices.max31856_reader import MAX31856Reader
 from devices.inficon_serial_reader import InficonReader
+from devices.granville_phillips_serial_reader import GranvillePhillipsReader
 
 class repl(QtWidgets.QMainWindow):
     def __init__(self):
@@ -23,6 +24,7 @@ class repl(QtWidgets.QMainWindow):
         self.ads_reader = ADS1256Reader()
         self.temp_reader = MAX31856Reader()
         self.inficon_reader = InficonReader()
+        self.granville_phillips_reader = GranvillePhillipsReader()
 
         self.num_plots = len(ITEMS)
 
@@ -55,7 +57,7 @@ class repl(QtWidgets.QMainWindow):
         #self.csv_file = open(data_dir + temp_path + ".csv", mode='w', newline='')
         self.csv_file = open("data_acquired.csv", mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['Timestamp'] + ITEMS)
+        self.csv_writer.writerow(['timestamp'] + ITEMS)
 
         pg.setConfigOption('background', WHITE)
         pg.setConfigOption('foreground', BLACK)
@@ -108,6 +110,7 @@ class repl(QtWidgets.QMainWindow):
         ads_values = self.ads_reader.read_all()
         temperature = self.temp_reader.read_temperature()
         inficon_data = self.inficon_reader.get_inficon_data()
+        pressure = self.granville_phillips_reader.get_granville_phillips_data()
 
         if inficon_data[0] == "NAK" and self.updating:
             print("Received NAK — pausing data collection")
@@ -129,7 +132,7 @@ class repl(QtWidgets.QMainWindow):
         if self.updating:
             self.rate = rate = float(inficon_data[0])
             self.power = power = float(inficon_data[1])
-            self.pressure = pressure = 0.0
+            self.pressure = pressure
             self.temperature = temperature
             self.crystal = crystal = float(inficon_data[2])
             self.anode = anode = 0.0
