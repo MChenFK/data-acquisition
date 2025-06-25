@@ -77,3 +77,5 @@ class InficonReader:
         #print(inficon_data)
         return inficon_data
         
+    def close_serial(self):
+        self.ser.close()

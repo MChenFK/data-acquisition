@@ -35,8 +35,8 @@ class MicromegaReader:
 
     def send_command(self, cmd):
         # Ensure command starts with "*"
-        if not user_input.startswith(RECOGNITION_CHAR):
-            full_cmd = f"{RECOGNITION_CHAR}{user_input}"
+        if not cmd.startswith(RECOGNITION_CHAR):
+            full_cmd = f"{RECOGNITION_CHAR}{cmd}"
         else:
             full_cmd = user_input
 
@@ -59,10 +59,9 @@ class MicromegaReader:
         #print("Decoded:", decoded)
         logging.info(f"Received: {response}")
 
-    ser.close()
-
-    
-
     def get_data(self):
         response = self.send_command("V01")
         return response
+
+    def close_serial(self):
+        self.ser.close()
