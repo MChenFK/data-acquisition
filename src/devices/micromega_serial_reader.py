@@ -34,16 +34,9 @@ class MicromegaReader:
         
 
     def send_command(self, cmd):
-        
-
-        
-        user_input = input("Command> ").strip()
-        if user_input.lower() == "exit":
-            break
-
-        # Ensure command starts with "*00"
-        if not user_input.startswith(RECOGNITION_CHAR + DEVICE_ADDRESS):
-            full_cmd = f"{RECOGNITION_CHAR}{DEVICE_ADDRESS}{user_input}"
+        # Ensure command starts with "*"
+        if not user_input.startswith(RECOGNITION_CHAR):
+            full_cmd = f"{RECOGNITION_CHAR}{user_input}"
         else:
             full_cmd = user_input
 
@@ -60,10 +53,10 @@ class MicromegaReader:
         #time.sleep(0.05)
         #response = ser.read_until(b'\r')
         response = ser.readline()
-        print("Raw:", repr(response))
+        #print("Raw:", repr(response))
 
         decoded = response.decode(errors='ignore').strip()
-        print("Decoded:", decoded)
+        #print("Decoded:", decoded)
         logging.info(f"Received: {response}")
 
     ser.close()
@@ -71,8 +64,5 @@ class MicromegaReader:
     
 
     def get_data(self):
-        response = self.send_command("#RD")
-        granville_phillips_data = response.split()
-        pressure = float(granville_phillips_data[1])
-        #print(granville_phillips_data)
-        return pressure
+        response = self.send_command("V01")
+        return response
