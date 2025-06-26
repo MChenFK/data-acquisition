@@ -6,7 +6,6 @@ from constants import *
 # Serial port and device settings
 PORT = '/dev/ttyUSB0'
 BAUDRATE = 9600
-DEVICE_ADDRESS = ""  # RS-485 address of your device
 RECOGNITION_CHAR = "*"
 
 class MicromegaReader:
@@ -28,9 +27,9 @@ class MicromegaReader:
             )
 
         except serial.SerialException as e:
-        error_msg = f"Serial error on {PORT}: {e}"
-        print(error_msg)
-        logging.error(error_msg)
+            error_msg = f"Serial error on {PORT}: {e}"
+            print(error_msg)
+            logging.error(error_msg)
         
 
     def send_command(self, cmd):

@@ -5,7 +5,7 @@ import spidev
 class ADS1256Reader:
     def __init__(self, differential=False):
         self.spi = spidev.SpiDev()
-        self.spi.open(0, 0)  # SPI bus 0, CS0 (GPIO 15 on your wiring)
+        self.spi.open(0, 0)
         self.spi.mode = 1
         self.spi.max_speed_hz = 1000000
 
