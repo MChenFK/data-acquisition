@@ -57,10 +57,11 @@ class MicromegaReader:
         decoded = response.decode(errors='ignore').strip()
         #print("Decoded:", decoded)
         logging.info(f"Received: {response}")
+        return response
 
     def get_data(self):
         response = self.send_command("V01")
-        return response
+        return [float(response)]
 
     def close_serial(self):
         self.ser.close()

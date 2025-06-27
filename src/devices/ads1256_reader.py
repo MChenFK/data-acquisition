@@ -2,7 +2,7 @@ from drivers.ADS1256 import ADS1256
 import RPi.GPIO as GPIO
 import spidev
 
-class ADS1256Reader:
+class ADS1256Reader(BaseReader):
     def __init__(self, differential=False):
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
@@ -16,7 +16,7 @@ class ADS1256Reader:
         self.num_channels = 8
         self.voltages = [0] * self.num_channels
 
-    def read_all(self):
+    def read(self):
         try:
             ADC_Value = self.adc.ADS1256_GetAll()
             for i in range(self.num_channels):
@@ -26,4 +26,7 @@ class ADS1256Reader:
         except Exception as e:
             GPIO.cleanup()
             raise RuntimeError(f"Failed to read from ADS1256: {e}")
+
+    def cleanup(self):
+        GPIO.cleanup()
 

@@ -35,5 +35,12 @@ ANODE = 5
 NEUTRALIZATION = 6
 GAS = 7
 
-
+READERS = [
+    "max31856",
+    "granville_phillips_350",
+    "inficon_IC/5",
+    "micromega",
+    "micromega",
+    "ads1256"
+]
 

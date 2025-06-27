@@ -3,7 +3,7 @@ import time
 import logging
 from constants import *
 
-class GranvillePhillipsReader:
+class GranvillePhillipsReader(BaseReader):
     def __init__(self):
         logging.basicConfig(
             filename='data/granville_phillips_serial.log',
@@ -44,11 +44,11 @@ class GranvillePhillipsReader:
         logging.info(f"Received: {response}")
         return response
 
-    def get_granville_phillips_data(self):
+    def read(self):
         response = self.send_command("#RD")
-        pressure = float(response)
+        pressure = [float(response)]
         #print(granville_phillips_data)
         return pressure
 
-    def close_serial(self):
+    def cleanup(self):
         self.ser.close()

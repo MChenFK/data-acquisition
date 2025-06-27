@@ -4,7 +4,7 @@ import logging
 from constants import *
 from devices.inficon_constants import *
 
-class InficonReader:
+class InficonReader(BaseReader):
     def __init__(self):
 
         logging.basicConfig(
@@ -66,16 +66,16 @@ class InficonReader:
         logging.info(f"Received response: {decoded_response}")
         return decoded_response if decoded_response else "ACK Received (no response data)"
 
-    def get_inficon_data(self):
+    def read(self):
         # rate, power, thickness
         response = self.send_command("SL 0 " + str(self.current_layer))
         if response == "NAK Received":
             inficon_data = ["NAK"]
             self.current_layer += 1
             return inficon_data
-        inficon_data = response.split()
+        inficon_data = [float(x) for x in response.split()]
         #print(inficon_data)
         return inficon_data
         
-    def close_serial(self):
+    def cleanup(self):
         self.ser.close()
