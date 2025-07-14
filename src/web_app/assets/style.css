@@ -1,4 +1,4 @@
-/* Beachy theme base */
+/* Theme base */
 body {
     background-image: url("beach.gif");
     background-size: cover;
@@ -10,18 +10,18 @@ body {
 }
 
 h1 {
-    color: #ffffff !important; /* Deep sea blue */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* optional glow effect */
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 h2, h3 {
-    color: #004d4d; /* Lighter ocean tone */
+    color: #004d4d;
 }
 
 
 /* Make main content slightly transparent with a soft background */
 #main-content {
-    background-color: rgba(255, 255, 255, 0.3);  /* White with 85% opacity */
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     max-width: 1800px;
@@ -50,6 +50,16 @@ h2, h3 {
     cursor: pointer;
 }
 
+/* Target the tab buttons inside dcc.Tabs */
+.custom-tabs .tab {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.custom-tabs .tab:last-child {
+    margin-right: 0;
+    
+}
 
 /* Graphs and their containers */
 .dash-graph,
@@ -67,7 +77,6 @@ h2, h3 {
     border-radius: 8px;
 }
 
-/* Optional: soften buttons too */
 button, .dash-button {
     text-transform: none !important;
     font-size: 12px;
@@ -77,12 +86,10 @@ button, .dash-button {
     color: #003366;
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
 
-    /* Center the text vertically and horizontally */
     display: center;
     align-items: center;
     justify-content: center;
 
-    /* Optional: prevent shrinking on small screens */
     min-height: 36px;
     line-height: 1.2;
 }
@@ -96,5 +103,30 @@ button, .dash-button {
     margin: 0 !important;
 }
 
+
+/* Dropdown control box */
+.Select-control {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    backdrop-filter: blur(4px);
+}
+
+/* Dropdown text */
+.Select-value-label, .Select-placeholder {
+    color: rgb(0, 0, 0) !important;
+}
+
+/* Dropdown menu popup */
+.Select-menu-outer {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Dropdown menu item text */
+.VirtualizedSelectOption {
+    color: rgb(0, 0, 0) !important;
+}
 
 

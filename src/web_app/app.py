@@ -14,11 +14,10 @@ from constants import ITEMS
 FILE_NAME = "data.csv"
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Constants and data
 CSV_PATH = os.path.abspath(os.path.join(ROOT_DIR, 'data', FILE_NAME))
 SENSOR_COLUMNS = ITEMS
 
-MAX_POINTS = 1000  # limit points to plot
+MAX_POINTS = 5000  # limit points
 
 def read_csv():
     if not os.path.exists(CSV_PATH):
@@ -31,6 +30,7 @@ def read_csv():
 
 app = dash.Dash(
     __name__,
+    suppress_callback_exceptions=True,
     assets_folder=os.path.join(ROOT_DIR, 'src', 'web_app', 'assets')
 )
 server = app.server
@@ -43,23 +43,39 @@ app.layout = html.Div([
     ]),
 
     html.Div([
-        html.Button("Pause", id="pause-button", n_clicks=0),
+        html.Button(
+            "Pause",
+            id="pause-button",
+            n_clicks=0,
+            style={
+                'width': '100px',
+                'minWidth': '100px',
+                'maxWidth': '100px',
+                'textAlign': 'center'
+            }
+        ),
+
         dcc.Store(id="pause-state", data=False),
     ], style={'textAlign': 'center', 'padding': '10px'}),
 
     html.Div([
-        dcc.Tabs(id='tabs', value='tab-all', children=[
-            dcc.Tab(label='All Graphs', value='tab-all'),
-            dcc.Tab(label='Single Graph View', value='tab-single'),
-            dcc.Tab(label='CSV Table', value='tab-table'),
-        ], className='custom-tabs',),
-
+        html.Div(
+            dcc.Tabs(id='tabs', value='tab-all', children=[
+                dcc.Tab(label='All Graphs', value='tab-all'),
+                dcc.Tab(label='Single Graph View', value='tab-single'),
+                dcc.Tab(label='CSV Table', value='tab-table'),
+            ]),
+            style={'padding': '10px'},
+            className='custom-tabs'
+        ),
+        
         dcc.Store(id='data-store'),
         dcc.Store(id='page-size-store', data=15),
 
         html.Div(id='tab-content'),
         dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0, disabled=False)
-    ], id='main-content', style={'padding': '20px'}),
+    ], id='main-content', style={'padding': '20px'})
+
 
 
 ])
@@ -98,7 +114,7 @@ def render_tab(tab, data):
                 dcc.Checklist(
                     id='graph-selector',
                     options=[{'label': col, 'value': col} for col in SENSOR_COLUMNS],
-                    value=SENSOR_COLUMNS,  # default all selected
+                    value=SENSOR_COLUMNS,
                     labelStyle={'display': 'inline-block', 'marginRight': '15px'}
                 )
             ], style={'padding': '10px'}),
@@ -125,14 +141,14 @@ def render_tab(tab, data):
                 figure=go.Figure(
                     layout=dict(
                         title='Loading...',
-                        paper_bgcolor='rgba(0,0,0,0)',  # transparent paper background
-                        plot_bgcolor='rgba(0,0,0,0)',   # transparent plotting area
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
                         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                         margin=dict(l=30, r=10, t=40, b=30),
                     )
                 ),
-                style={'backgroundColor': 'transparent'}  # just in case from CSS side
+                style={'backgroundColor': 'transparent'}
             ),
 
             html.Div([
@@ -143,7 +159,11 @@ def render_tab(tab, data):
 
     elif tab == 'tab-table':
         return html.Div([
-            html.Button("Download CSV", id="btn-download-csv"),
+            html.Button(
+                "Download CSV",
+                id="btn-download-csv",
+                style={'margin': '10px 0'}
+            ),
             dcc.Download(id="download-csv"),
             html.Label("Rows per page:"),
             dcc.Dropdown(
@@ -151,7 +171,7 @@ def render_tab(tab, data):
                 options=[{'label': str(n), 'value': n} for n in [10, 15, 25, 50, 100]],
                 value=15,
                 clearable=False,
-                style={'width': '150px'}
+                style={'width': '150px', 'margin': '10px 0'}
             ),
             dash_table.DataTable(
                 id='csv-table',
@@ -160,18 +180,18 @@ def render_tab(tab, data):
                 page_size=15,
                 style_table={
                     'overflowX': 'auto',
-                    'backgroundColor': 'rgba(255, 255, 255, 0.3)',  # white with 30% opacity
+                    'backgroundColor': 'rgba(255, 255, 255, 0.3)',
                     'borderRadius': '5px',
                 },
                 style_header={
-                    'backgroundColor': 'rgba(0, 51, 102, 0.7)',  # your dark header color with 70% opacity
+                    'backgroundColor': 'rgba(0, 51, 102, 0.7)',
                     'color': 'white',
                     'fontWeight': 'bold'
                 },
                 style_cell={
                     'textAlign': 'left',
                     'padding': '5px',
-                    'backgroundColor': 'rgba(255, 255, 255, 0.2)',  # cells with 20% opacity
+                    'backgroundColor': 'rgba(255, 255, 255, 0.2)',
                 },
             )
 
@@ -192,7 +212,7 @@ def toggle_pause(n_clicks, paused):
     Input("pause-state", "data")
 )
 def control_interval(paused):
-    return paused  # True disables interval
+    return paused
 
 @app.callback(
     Output("pause-button", "children"),
@@ -212,10 +232,8 @@ def generate_csv(n_clicks, data):
     if not data:
         return dash.no_update
 
-    # Convert data (list of dicts) back to DataFrame
     df = pd.DataFrame(data)
 
-    # Use io.StringIO to create in-memory CSV string
     csv_string = df.to_csv(index=False, encoding='utf-8')
 
     return dict(content=csv_string, filename=FILE_NAME)
@@ -340,13 +358,12 @@ def update_zoom_store(all_relayout, all_ids, store_data):
 
     store_data = store_data or {}
 
-    # Get the triggering component
     ctx = dash.callback_context
     if not ctx.triggered:
         raise PreventUpdate
 
     triggered_prop = ctx.triggered[0]['prop_id']
-    triggered_id_str = triggered_prop.split('.')[0]  # Get JSON ID
+    triggered_id_str = triggered_prop.split('.')[0]
     try:
         triggered_id = json.loads(triggered_id_str)
         triggered_index = triggered_id['index']
@@ -359,7 +376,7 @@ def update_zoom_store(all_relayout, all_ids, store_data):
             continue
 
         if not relayout:
-            break  # no update
+            break
 
         # Detect reset (autoscale)
         if relayout.get('xaxis.autorange') or relayout.get('yaxis.autorange'):
@@ -388,7 +405,7 @@ def update_individual_zoom(relayout, existing_zoom):
         raise dash.exceptions.PreventUpdate
 
     if relayout.get("xaxis.autorange") or relayout.get("yaxis.autorange"):
-        return {}  # reset zoom
+        return {}
 
     keys = ['xaxis.range[0]', 'xaxis.range[1]', 'yaxis.range[0]', 'yaxis.range[1]']
     return {k: relayout[k] for k in keys if k in relayout}
@@ -452,7 +469,7 @@ def update_single_graph(selected_col, data, relayout_data):
     if len(df) > 100:
         start = df['timestamp'].iloc[-100]
         end = df['timestamp'].iloc[-1]
-        # Only set x-axis range if user hasn't manually zoomed (relayout_data)
+        
         if not relayout_data or 'xaxis.range[0]' not in relayout_data:
             fig.update_xaxes(range=[start, end])
 
