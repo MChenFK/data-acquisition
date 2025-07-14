@@ -40,6 +40,11 @@ app.layout = html.Div([
         html.H1("40 Inch Data", style={'textAlign': 'center', 'padding': '10px'}),
     ]),
 
+    html.Div([
+        html.Button("Pause", id="pause-button", n_clicks=0),
+        dcc.Store(id="pause-state", data=False),
+    ], style={'textAlign': 'center', 'padding': '10px'}),
+
     # Tabs
     dcc.Tabs(id='tabs', value='tab-all', children=[
         dcc.Tab(label='All Graphs', value='tab-all'),
@@ -58,7 +63,9 @@ app.layout = html.Div([
     html.Div(id='tab-content'),
 
     # Interval for updating data
-    dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0)
+    dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0, disabled=False)
+
+
 ])
 
 # Callback to update data-store every interval
@@ -147,6 +154,30 @@ def render_tab(tab, data):
             )
         ])
 
+@app.callback(
+    Output("pause-state", "data"),
+    Input("pause-button", "n_clicks"),
+    State("pause-state", "data")
+)
+def toggle_pause(n_clicks, paused):
+    if n_clicks == 0:
+        return paused
+    return not paused
+
+@app.callback(
+    Output("interval-component", "disabled"),
+    Input("pause-state", "data")
+)
+def control_interval(paused):
+    return paused  # True disables interval
+
+@app.callback(
+    Output("pause-button", "children"),
+    Input("pause-state", "data")
+)
+def update_pause_button(paused):
+    return "Resume" if paused else "Pause"
+
 
 @app.callback(
     Output("download-csv", "data"),
@@ -171,10 +202,9 @@ def generate_csv(n_clicks, data):
      Output('all-graphs-container', 'style')],
     [Input('graph-selector', 'value'),
      Input('data-store', 'data'),
-     Input('tabs', 'value')],
-    State('zoom-store', 'data')
+     Input('tabs', 'value')]
 )
-def update_all_graphs(selected_graphs, data, current_tab, zoom_data):
+def update_all_graphs(selected_graphs, data, current_tab):
     if current_tab != 'tab-all':
         raise dash.exceptions.PreventUpdate
 
@@ -187,7 +217,6 @@ def update_all_graphs(selected_graphs, data, current_tab, zoom_data):
     ordered_selected = [col for col in SENSOR_COLUMNS if col in selected_graphs]
 
     graphs = []
-    zoom_data = zoom_data or {}
     for col in ordered_selected:
         if col not in df.columns:
             continue
@@ -200,16 +229,6 @@ def update_all_graphs(selected_graphs, data, current_tab, zoom_data):
         ))
         fig.update_layout(title=col, margin=dict(l=30, r=10, t=40, b=30))
 
-        # Apply previous zoom if available
-        if col in zoom_data:
-            relayout = zoom_data[col]
-            x_range = relayout.get("xaxis.range[0]"), relayout.get("xaxis.range[1]")
-            y_range = relayout.get("yaxis.range[0]"), relayout.get("yaxis.range[1]")
-            if all(x_range):
-                fig.update_xaxes(range=x_range)
-            if all(y_range):
-                fig.update_yaxes(range=y_range)
-
         graphs.append(
             dcc.Graph(
                 id={'type': 'sensor-graph', 'index': col},
@@ -218,6 +237,7 @@ def update_all_graphs(selected_graphs, data, current_tab, zoom_data):
                 clear_on_unhover=False
             )
         )
+
 
 
     num_graphs = len(graphs) or 1
