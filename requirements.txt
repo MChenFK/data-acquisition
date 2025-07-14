@@ -23,3 +23,11 @@ shiboken6==6.8.0.2
 spidev==3.7
 sysv-ipc==1.1.0
 typing_extensions==4.13.2
+
+dash>=1.0.2
+dash-daq>=0.1.7
+gunicorn>=19.9.0
+numpy>=1.16.2
+pandas>=0.24.2
+plotly
+dash-mantine-components==0.12.1

@@ -199,5 +199,7 @@ class repl(QtWidgets.QMainWindow):
         if not self.csv_file.closed:
             print("Closing CSV file on window close...")
             self.csv_file.close()
+        # Close serial ports
+        
         event.accept()
 

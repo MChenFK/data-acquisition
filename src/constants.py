@@ -18,7 +18,7 @@ BLACK = 'k'
 ITEMS = [
     "deposition rate (A/sec)",
     "power (%)",
-    "pressure (mTorr)",
+    "pressure (Torr)",
     "temperature (C)",
     "crystal (kA)",
     "anode current (amp)",
