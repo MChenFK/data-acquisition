@@ -1,16 +1,95 @@
+/* Beachy theme base */
 body {
     background-image: url("beach.gif");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
     background-attachment: fixed;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
+    color: #003344;
+    margin: 0;
 }
 
-#main-content {
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 1200px;
-    margin: auto;
+h1 {
+    color: #ffffff !important; /* Deep sea blue */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* optional glow effect */
 }
+
+h2, h3 {
+    color: #004d4d; /* Lighter ocean tone */
+}
+
+
+/* Make main content slightly transparent with a soft background */
+#main-content {
+    background-color: rgba(255, 255, 255, 0.3);  /* White with 85% opacity */
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    max-width: 1800px;
+    margin: auto;
+    padding: 30px;
+}
+
+/* Selected tab */
+.custom-tabs .tab--selected {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    color: #003366 !important;
+    font-weight: bold;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Unselected tabs */
+.custom-tabs .tab {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    color: #003366 !important;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Optional hover effect */
+.custom-tabs .tab:hover {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    cursor: pointer;
+}
+
+
+/* Graphs and their containers */
+.dash-graph,
+.dash-table-container {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Transparent dropdowns and checklists */
+.Select-control,
+.dash-dropdown,
+.dash-checklist {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    border-radius: 8px;
+}
+
+/* Optional: soften buttons too */
+button, .dash-button {
+    text-transform: none !important;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #003366;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+
+    /* Center the text vertically and horizontally */
+    display: center;
+    align-items: center;
+    justify-content: center;
+
+    /* Optional: prevent shrinking on small screens */
+    min-height: 36px;
+    line-height: 1.2;
+}
+

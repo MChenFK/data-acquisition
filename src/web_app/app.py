@@ -37,7 +37,7 @@ app.title = "40 Inch Data"
 app.layout = html.Div([
     # Banner
     html.Div([
-        html.H1("40 Inch Data", style={'textAlign': 'center', 'padding': '10px'}),
+        html.H1("Welcome to the 40 Inch Beach", style={'textAlign': 'center', 'padding': '10px'}),
     ]),
 
     html.Div([
@@ -45,25 +45,18 @@ app.layout = html.Div([
         dcc.Store(id="pause-state", data=False),
     ], style={'textAlign': 'center', 'padding': '10px'}),
 
-    # Tabs
-    dcc.Tabs(id='tabs', value='tab-all', children=[
-        dcc.Tab(label='All Graphs', value='tab-all'),
-        dcc.Tab(label='Single Graph View', value='tab-single'),
-        dcc.Tab(label='CSV Table', value='tab-table'),
-    ]),
-
-    # Store for current df (optional optimization)
-    dcc.Store(id='data-store'),
-
-    dcc.Store(id='zoom-store', data={}),
-
-    dcc.Store(id='page-size-store', data=15),
-
-    # Content container for tab content
-    html.Div(id='tab-content'),
-
-    # Interval for updating data
-    dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0, disabled=False)
+    html.Div([
+        dcc.Tabs(id='tabs', value='tab-all', children=[
+            dcc.Tab(label='All Graphs', value='tab-all'),
+            dcc.Tab(label='Single Graph View', value='tab-single'),
+            dcc.Tab(label='CSV Table', value='tab-table'),
+        ], className='custom-tabs',),
+        
+        dcc.Store(id='data-store'),
+        dcc.Store(id='page-size-store', data=15),
+        html.Div(id='tab-content'),
+        dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0, disabled=False)
+    ], id='main-content', style={'padding': '20px'}),
 
 
 ])
