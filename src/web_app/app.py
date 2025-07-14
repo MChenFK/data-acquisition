@@ -51,7 +51,7 @@ app.layout = html.Div([
             dcc.Tab(label='Single Graph View', value='tab-single'),
             dcc.Tab(label='CSV Table', value='tab-table'),
         ], className='custom-tabs',),
-        
+
         dcc.Store(id='data-store'),
         dcc.Store(id='page-size-store', data=15),
         html.Div(id='tab-content'),
@@ -117,7 +117,21 @@ def render_tab(tab, data):
                 clearable=False,
                 style={'width': '300px', 'margin': '10px 0'}
             ),
-            dcc.Graph(id='single-graph'),
+            dcc.Graph(
+                id='single-graph',
+                figure=go.Figure(
+                    layout=dict(
+                        title='Loading...',
+                        paper_bgcolor='rgba(0,0,0,0)',  # transparent paper background
+                        plot_bgcolor='rgba(0,0,0,0)',   # transparent plotting area
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        margin=dict(l=30, r=10, t=40, b=30),
+                    )
+                ),
+                style={'backgroundColor': 'transparent'}  # just in case from CSS side
+            ),
+
             html.Div([
                 html.Button("Previous", id='prev-graph', n_clicks=0),
                 html.Button("Next", id='next-graph', n_clicks=0),
@@ -141,10 +155,23 @@ def render_tab(tab, data):
                 columns=[],
                 data=[],
                 page_size=15,
-                style_table={'overflowX': 'auto'},
-                style_header={'backgroundColor': '#003366', 'color': 'white', 'fontWeight': 'bold'},
-                style_cell={'textAlign': 'left', 'padding': '5px'},
+                style_table={
+                    'overflowX': 'auto',
+                    'backgroundColor': 'rgba(255, 255, 255, 0.3)',  # white with 30% opacity
+                    'borderRadius': '5px',
+                },
+                style_header={
+                    'backgroundColor': 'rgba(0, 51, 102, 0.7)',  # your dark header color with 70% opacity
+                    'color': 'white',
+                    'fontWeight': 'bold'
+                },
+                style_cell={
+                    'textAlign': 'left',
+                    'padding': '5px',
+                    'backgroundColor': 'rgba(255, 255, 255, 0.2)',  # cells with 20% opacity
+                },
             )
+
         ])
 
 @app.callback(
@@ -220,7 +247,12 @@ def update_all_graphs(selected_graphs, data, current_tab):
             mode='lines+markers',
             name=col
         ))
-        fig.update_layout(title=col, margin=dict(l=30, r=10, t=40, b=30))
+        fig.update_layout(
+            title=col,
+            margin=dict(l=30, r=10, t=40, b=30),
+            paper_bgcolor='rgba(255,255,255,0.5)',
+            plot_bgcolor='rgba(255,255,255,0)',
+        )
 
         graphs.append(
             dcc.Graph(
@@ -306,7 +338,13 @@ def update_single_graph(selected_col, data, relayout_data):
         mode='lines+markers',
         name=selected_col
     ))
-    fig.update_layout(title=selected_col, margin=dict(l=30, r=10, t=40, b=30))
+    fig.update_layout(
+        title=selected_col,
+        margin=dict(l=30, r=10, t=40, b=30),
+        paper_bgcolor='rgba(255,255,255,0.5)',
+        plot_bgcolor='rgba(255,255,255,0)',
+    )
+
 
     if relayout_data:
         x_range = relayout_data.get("xaxis.range[0]"), relayout_data.get("xaxis.range[1]")

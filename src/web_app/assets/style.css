@@ -34,20 +34,14 @@ h2, h3 {
     background-color: rgba(255, 255, 255, 0.7) !important;
     color: #003366 !important;
     font-weight: bold;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-radius: 8px;
 }
 
 /* Unselected tabs */
 .custom-tabs .tab {
     background-color: rgba(255, 255, 255, 0.3) !important;
     color: #003366 !important;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-radius: 8px;
 }
 
 /* Optional hover effect */
@@ -92,4 +86,15 @@ button, .dash-button {
     min-height: 36px;
     line-height: 1.2;
 }
+
+/* Remove border and background from graph containers */
+.dash-graph {
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+
 
