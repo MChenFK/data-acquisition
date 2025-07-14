@@ -1,10 +1,12 @@
 import dash
 from dash import dcc, html, Input, Output, State, dash_table
+from dash.exceptions import PreventUpdate
 from dash.dependencies import MATCH, ALL
 import pandas as pd
 import os
 import plotly.graph_objs as go
 import sys
+import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from constants import ITEMS
@@ -16,7 +18,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 CSV_PATH = os.path.abspath(os.path.join(ROOT_DIR, 'data', FILE_NAME))
 SENSOR_COLUMNS = ITEMS
 
-MAX_POINTS = 100  # limit points to plot
+MAX_POINTS = 1000  # limit points to plot
 
 def read_csv():
     if not os.path.exists(CSV_PATH):
@@ -54,6 +56,7 @@ app.layout = html.Div([
 
         dcc.Store(id='data-store'),
         dcc.Store(id='page-size-store', data=15),
+
         html.Div(id='tab-content'),
         dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0, disabled=False)
     ], id='main-content', style={'padding': '20px'}),
@@ -217,29 +220,67 @@ def generate_csv(n_clicks, data):
 
     return dict(content=csv_string, filename=FILE_NAME)
 
+def slice_for_plotting(df, max_plot_points=100):
+    if len(df) > max_plot_points:
+        return df.tail(max_plot_points)
+    return df
+
+def relayout_to_layout_update(relayout):
+    layout_update = {}
+
+    for k, v in relayout.items():
+        if '.' in k:
+            axis, detail = k.split('.', 1)
+            if axis not in layout_update:
+                layout_update[axis] = {}
+            if detail.startswith("range["):
+                idx = int(detail[len("range[")])
+                layout_update[axis].setdefault("range", [None, None])[idx] = v
+    return layout_update
+
 @app.callback(
-    [Output('all-graphs-container', 'children'),
-     Output('all-graphs-container', 'style')],
-    [Input('graph-selector', 'value'),
-     Input('data-store', 'data'),
-     Input('tabs', 'value')]
+    Output('all-graphs-container', 'children'),
+    Output('all-graphs-container', 'style'),
+    Input('graph-selector', 'value'),
+    Input('data-store', 'data'),
+    Input('tabs', 'value'),
+    State({'type': 'zoom-store', 'index': ALL}, 'data'),
+    State({'type': 'zoom-store', 'index': ALL}, 'id'),
 )
-def update_all_graphs(selected_graphs, data, current_tab):
+def update_all_graphs(selected_graphs, data, current_tab, all_zoom_data, all_zoom_ids):
     if current_tab != 'tab-all':
         raise dash.exceptions.PreventUpdate
 
     if not data:
         return html.Div("No data to display."), {}
+
     if not selected_graphs:
         return html.Div("No graphs selected."), {}
 
     df = pd.DataFrame(data)
-    ordered_selected = [col for col in SENSOR_COLUMNS if col in selected_graphs]
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
 
+    zoom_map = {zid['index']: zdata for zid, zdata in zip(all_zoom_ids, all_zoom_data)}
+
+    ordered_selected = [col for col in SENSOR_COLUMNS if col in selected_graphs]
     graphs = []
+
+    def relayout_to_layout_update(relayout):
+        layout_update = {}
+        for k, v in relayout.items():
+            if '.' in k:
+                axis, detail = k.split('.', 1)
+                if axis not in layout_update:
+                    layout_update[axis] = {}
+                if detail.startswith("range["):
+                    idx = int(detail[len("range[")])
+                    layout_update[axis].setdefault("range", [None, None])[idx] = v
+        return layout_update
+
     for col in ordered_selected:
         if col not in df.columns:
             continue
+
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=df['timestamp'],
@@ -254,18 +295,26 @@ def update_all_graphs(selected_graphs, data, current_tab):
             plot_bgcolor='rgba(255,255,255,0)',
         )
 
-        graphs.append(
-            dcc.Graph(
-                id={'type': 'sensor-graph', 'index': col},
-                figure=fig,
-                style={'height': '300px', 'width': '100%'},
-                clear_on_unhover=False
-            )
+        zoom_data = zoom_map.get(col)
+        if zoom_data:
+            fig.update_layout(relayout_to_layout_update(zoom_data))
+        else:
+            if len(df) > 100:
+                fig.update_xaxes(range=[df['timestamp'].iloc[-100], df['timestamp'].iloc[-1]])
+
+        graph = dcc.Graph(
+            id={'type': 'sensor-graph', 'index': col},
+            figure=fig,
+            style={'height': '300px', 'width': '100%'},
+            clear_on_unhover=False
         )
 
+        zoom_store = dcc.Store(
+            id={'type': 'zoom-store', 'index': col},
+            data={}
+        )
 
-
-    num_graphs = len(graphs) or 1
+        graphs.append(html.Div([graph, zoom_store]))
 
     container_style = {
         'display': 'grid',
@@ -281,16 +330,68 @@ def update_all_graphs(selected_graphs, data, current_tab):
 @app.callback(
     Output('zoom-store', 'data'),
     Input({'type': 'sensor-graph', 'index': ALL}, 'relayoutData'),
+    State({'type': 'sensor-graph', 'index': ALL}, 'id'),
     State('zoom-store', 'data'),
     prevent_initial_call=True
 )
-def update_zoom_store(all_relayout, store_data):
+def update_zoom_store(all_relayout, all_ids, store_data):
+    import json
+    from dash.exceptions import PreventUpdate
+
     store_data = store_data or {}
-    for i, r in enumerate(all_relayout):
-        if r and 'xaxis.range[0]' in r:
-            col = SENSOR_COLUMNS[i]
-            store_data[col] = r
+
+    # Get the triggering component
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+
+    triggered_prop = ctx.triggered[0]['prop_id']
+    triggered_id_str = triggered_prop.split('.')[0]  # Get JSON ID
+    try:
+        triggered_id = json.loads(triggered_id_str)
+        triggered_index = triggered_id['index']
+    except (json.JSONDecodeError, KeyError):
+        raise PreventUpdate
+
+    # Match it against relayouts and ids
+    for relayout, id_obj in zip(all_relayout, all_ids):
+        if id_obj['index'] != triggered_index:
+            continue
+
+        if not relayout:
+            break  # no update
+
+        # Detect reset (autoscale)
+        if relayout.get('xaxis.autorange') or relayout.get('yaxis.autorange'):
+            store_data.pop(triggered_index, None)
+            return store_data
+
+        # Store zoom ranges
+        keys_of_interest = ['xaxis.range[0]', 'xaxis.range[1]',
+                            'yaxis.range[0]', 'yaxis.range[1]']
+        zoom_data = {k: relayout[k] for k in keys_of_interest if k in relayout}
+        if zoom_data:
+            store_data[triggered_index] = zoom_data
+
+        break
+
     return store_data
+
+@app.callback(
+    Output({'type': 'zoom-store', 'index': MATCH}, 'data'),
+    Input({'type': 'sensor-graph', 'index': MATCH}, 'relayoutData'),
+    State({'type': 'zoom-store', 'index': MATCH}, 'data'),
+    prevent_initial_call=True
+)
+def update_individual_zoom(relayout, existing_zoom):
+    if not relayout:
+        raise dash.exceptions.PreventUpdate
+
+    if relayout.get("xaxis.autorange") or relayout.get("yaxis.autorange"):
+        return {}  # reset zoom
+
+    keys = ['xaxis.range[0]', 'xaxis.range[1]', 'yaxis.range[0]', 'yaxis.range[1]']
+    return {k: relayout[k] for k in keys if k in relayout}
 
 # Single graph callbacks (dropdown + next/prev buttons)
 @app.callback(
@@ -322,7 +423,8 @@ def cycle_single_graph(prev_clicks, next_clicks, current):
     Output('single-graph', 'figure'),
     [Input('single-graph-dropdown', 'value'),
      Input('data-store', 'data')],
-    State('single-graph', 'relayoutData')
+    State('single-graph', 'relayoutData'),
+    prevent_initial_call=True
 )
 def update_single_graph(selected_col, data, relayout_data):
     if not data or selected_col is None:
@@ -338,6 +440,7 @@ def update_single_graph(selected_col, data, relayout_data):
         mode='lines+markers',
         name=selected_col
     ))
+
     fig.update_layout(
         title=selected_col,
         margin=dict(l=30, r=10, t=40, b=30),
@@ -345,7 +448,15 @@ def update_single_graph(selected_col, data, relayout_data):
         plot_bgcolor='rgba(255,255,255,0)',
     )
 
+    # Determine initial zoom range for last 100 points (if enough points)
+    if len(df) > 100:
+        start = df['timestamp'].iloc[-100]
+        end = df['timestamp'].iloc[-1]
+        # Only set x-axis range if user hasn't manually zoomed (relayout_data)
+        if not relayout_data or 'xaxis.range[0]' not in relayout_data:
+            fig.update_xaxes(range=[start, end])
 
+    # Apply user zoom if exists
     if relayout_data:
         x_range = relayout_data.get("xaxis.range[0]"), relayout_data.get("xaxis.range[1]")
         y_range = relayout_data.get("yaxis.range[0]"), relayout_data.get("yaxis.range[1]")
@@ -356,7 +467,6 @@ def update_single_graph(selected_col, data, relayout_data):
             fig.update_yaxes(range=y_range)
 
     return fig
-
 
 @app.callback(
     Output('page-size-store', 'data'),
