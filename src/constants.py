@@ -39,8 +39,8 @@ READERS = [
     "max31856",
     "granville_phillips_350",
     "inficon_IC/5",
-    "micromega",
-    "micromega",
+    "micromega1",
+    "micromega2",
     "ads1256"
 ]
 

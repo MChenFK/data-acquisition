@@ -1,7 +1,7 @@
 from drivers.ADS1256 import ADS1256
 import RPi.GPIO as GPIO
 import spidev
-from base_reader import BaseReader
+from .base_reader import BaseReader
 
 class ADS1256Reader(BaseReader):
     def __init__(self, differential=False):

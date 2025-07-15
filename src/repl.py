@@ -8,7 +8,8 @@ from datetime import datetime
 from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
 
-from devices.base_reader import initialize_readers, read_all
+from devices.reader_factory import initialize_readers
+from devices.reader_utils import read_all
 
 class repl(QtWidgets.QMainWindow):
     def __init__(self):
@@ -36,27 +37,32 @@ class repl(QtWidgets.QMainWindow):
             count += 1
             temp_path = file_path + f" ({count})"
 
-        #self.csv_file = open(data_dir + temp_path + ".csv", mode='w', newline='')
         self.csv_file = open("data_acquired.csv", mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['timestamp'] + ITEMS)
 
+        # Determine number of plots based on ITEMS
+        self.num_plots = len(ITEMS)
+
+        # Plot UI setup
         pg.setConfigOption('background', WHITE)
         pg.setConfigOption('foreground', BLACK)
 
         central_widget = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(central_widget)
 
-        self.collection_active = False
         self.toggle_button = QtWidgets.QPushButton("Start")
         self.toggle_button.clicked.connect(self.toggle_collection)
         layout.addWidget(self.toggle_button)
 
         self.plot_widget = pg.GraphicsLayoutWidget()
         layout.addWidget(self.plot_widget)
-
         self.setCentralWidget(central_widget)
 
+        self.collection_active = False
+        self.timer_started = False
+
+        # Initialize plot data
         self.plots = []
         self.curves = []
         self.y_data = [[] for _ in range(self.num_plots)]
@@ -70,11 +76,11 @@ class repl(QtWidgets.QMainWindow):
             p.setLabel('left', ITEMS[i])
             p.setLabel('bottom', 'Time (s)')
             p.showGrid(x=True, y=True)
-            curve = p.plot(pen=pg.mkPen(color=colors[i], width=2))
+            curve = p.plot(pen=pg.mkPen(color=colors[i % len(colors)], width=2))
             self.plots.append(p)
             self.curves.append(curve)
 
-        self.timer_started = False
+        # Setup timer
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.refresh = REFRESH_SECONDS * 1000
@@ -89,59 +95,22 @@ class repl(QtWidgets.QMainWindow):
             QtWidgets.QApplication.quit()
             return
 
-        ads_values = self.ads_reader.read_all()
-        temperature = self.temp_reader.read_temperature()
-        inficon_data = self.inficon_reader.get_inficon_data()
-        pressure = self.granville_phillips_reader.get_granville_phillips_data()
+        try:
+            inputs = read_all(self.readers)
+        except Exception as e:
+            print(f"Read error: {e}")
+            return
 
-        if inficon_data[0] == "NAK" and self.updating:
-            print("Received NAK — pausing data collection")
-            self.updating = False
-            self.update_stop = time.time()
-
-            # self.timer.stop()
-            # self.toggle_button.setText("Start")
-            # self.collection_active = False
-
-            # QtCore.QTimer.singleShot(120_000, self.resume_collection)
-            #return
-        
-        if not self.updating:
-            elapsed = time.time() - self.update_stop
-            if elapsed >= 120:
-                self.updating = True
-
-        if self.updating:
-            self.rate = rate = float(inficon_data[0])
-            self.power = power = float(inficon_data[1])
-            self.pressure = pressure
-            self.temperature = temperature
-            self.crystal = crystal = float(inficon_data[2])
-            self.anode = anode = 0.0
-            self.neutralization = neutralization = 0.0
-            self.gas_flow = gas_flow = 0.0
+        # If any 'NAK' is received from Inficon, keep previous values
+        if isinstance(inputs[0], str) and inputs[0] == "NAK":
+            print("Received NAK — using previous Inficon data")
+            # Fall back to previous values (if any)
+            if hasattr(self, "last_inputs"):
+                inputs = self.last_inputs
+            else:
+                inputs = [0.0] * self.num_plots
         else:
-            rate = self.rate
-            power = self.power
-            pressure = self.pressure
-            self.temperature = temperature
-            crystal = self.crystal
-            anode = self.anode
-            neutralization = self.neutralization
-            gas_flow = self.gas_flow
-
-        inputs = [
-            rate,
-            power,
-            pressure,
-            temperature,
-            crystal,
-            anode,
-            neutralization,
-            gas_flow
-        ]
-
-        #print(inputs)
+            self.last_inputs = inputs  # Store current for future fallback
 
         current_time = time.time() - self.start_time
         self.x_data.append(current_time)
@@ -154,11 +123,13 @@ class repl(QtWidgets.QMainWindow):
         self.csv_writer.writerow([timestamp] + inputs)
         self.csv_file.flush()
 
+        # Trim data buffer
         max_points = 100
         if len(self.x_data) > max_points:
             self.x_data = self.x_data[-max_points:]
             for i in range(self.num_plots):
                 self.y_data[i] = self.y_data[i][-max_points:]
+
 
     def toggle_collection(self):
         if self.collection_active:
@@ -174,19 +145,10 @@ class repl(QtWidgets.QMainWindow):
             self.toggle_button.setText("Stop")
             self.collection_active = True
 
-    def resume_collection(self):
-        if not self.collection_active:
-            print("Resuming data collection after 2-minute pause")
-            self.collection_active = True
-            self.toggle_button.setText("Stop")
-            self.timer.start(self.refresh)
-
     def closeEvent(self, event):
         if self.timer.isActive():
             self.timer.stop()
         if not self.csv_file.closed:
             print("Closing CSV file on window close...")
             self.csv_file.close()
-        # Close serial ports
-        
         event.accept()
