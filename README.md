@@ -14,6 +14,8 @@
 
 ## Requirements:
 ### (See requirements.txt)
+- Waveshare ADS1256 library
+- Adafruit MAX31856 library
 
 ## Steps:
 1. Install requirements
