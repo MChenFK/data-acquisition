@@ -3,7 +3,9 @@
 ## Hardware:
 - Raspberry Pi 4 Model B
 - ADS1256 Analog to Digital Converter
+  - MKS 247
 - MAX31856 Thermocouple Reader
+  - Type K Thermocouple
 - RS232 to USB adapter x2
   - Inficon IC/5
   - Granville Phillips 350
