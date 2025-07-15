@@ -11,6 +11,13 @@
 
 ## Requirements:
 ### (See requirements.txt)
-- RPi.GPIO
-- Adafruit_GPIO
-- Adafruit_MAX31856
+
+## Troubleshooting:
+1. Make sure COM ports align
+- Ports should be set in /etc/udev/rules.d/99-usb-serial.rules
+- Blue serial to USB: /dev/ttyINFICON
+- Gray serial to USB: /dev/ttyGP350
+- Black RS485 to USB 1: /dev/ttyMICROMEGA1
+- Black RS485 to USB 2: /dev/ttyMICROMEGA2
+
+
