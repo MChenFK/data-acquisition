@@ -5,7 +5,7 @@ from devices.ads1256_reader import ADS1256Reader
 from devices.max31856_reader import MAX31856Reader
 from devices.inficon_serial_reader import InficonReader
 from devices.granville_phillips_serial_reader import GranvillePhillipsReader
-from devices.micromega import MicromegaReader
+from devices.micromega import MicromegaReader1
 
 class BaseReader(ABC):
     def __init__(self, name):
@@ -20,27 +20,25 @@ class BaseReader(ABC):
         pass
 
 def create_reader(config_name):
-    name = config_name
-
-    if name == 'max31856':
+    if config_name == 'max31856':
         return MAX31856Reader()
-    elif name == "granville_phillips_350":
+    elif config_name == "granville_phillips_350":
         return GranvillePhillipsReader()
-    elif name == "inficon_IC/5":
+    elif config_name == "inficon_IC/5":
         return InficonReader()
-    elif name == "micromega":
-        return MicromegaReader()
-    elif name == 'ads1256':
+    elif config_name == "micromega1":
+        return MicromegaReader('/dev/ttyMICROMEGA1')   # Pass port explicitly
+    elif config_name == "micromega2":
+        return MicromegaReader('/dev/ttyMICROMEGA2')   # Pass port explicitly
+    elif config_name == 'ads1256':
         return ADS1256Reader()
     else:
-        raise ValueError(f"Unsupported device type: {device_type}")
+        raise ValueError(f"Unsupported device type: {config_name}")
 
-
-def initialize_readers(READERS):
+def initialize_readers(reader_names):
     readers = []
-    for name in READERS:
-        reader = create_reader()
-
+    for name in reader_names:
+        reader = create_reader(name)
         readers.append(reader)
     return readers
 
@@ -48,8 +46,13 @@ def read_all(readers):
     results = []
     for reader in readers:
         try:
-            results.extend(reader.read())
+            data = reader.read()
+            if isinstance(data, (list, tuple)):
+                results.extend(data)
+            else:
+                results.append(data)
         except Exception as e:
-            results.extend(0.0)
-
+            print(f"Error reading from {reader.name}: {e}")
+            # Extend 0s for each expected item from this reader
+            results.extend([0.0])
     return results

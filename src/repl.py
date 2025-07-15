@@ -8,7 +8,7 @@ from datetime import datetime
 from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
 
-from base_reader import initialize_readers, read_all
+from devices.base_reader import initialize_readers, read_all
 
 class repl(QtWidgets.QMainWindow):
     def __init__(self):
@@ -19,18 +19,6 @@ class repl(QtWidgets.QMainWindow):
 
         # Initialize readers
         self.readers = initialize_readers(READERS)
-
-        self.num_plots = len(ITEMS)
-
-        # Save data when not updating
-        self.rate = 0.0
-        self.power = 0.0
-        self.pressure = 0.0
-        self.temperature = 0.0
-        self.crystal = 0.0
-        self.anode = 0.0
-        self.neutralization = 0.0
-        self.gas_flow = 0.0
 
         # Setup CSV file
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -202,4 +190,3 @@ class repl(QtWidgets.QMainWindow):
         # Close serial ports
         
         event.accept()
-

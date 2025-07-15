@@ -3,9 +3,11 @@ import time
 import logging
 from constants import *
 from devices.inficon_constants import *
+from devices.base_reader import BaseReader
 
 class InficonReader(BaseReader):
     def __init__(self):
+        super().__init__("inficon_IC/5")  # Initialize BaseReader with the reader name
 
         logging.basicConfig(
             filename='data/inficon_serial.log',
@@ -13,23 +15,20 @@ class InficonReader(BaseReader):
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
 
-        # Open serial connection
         self.ser = serial.Serial(
-            # Virtual serial port for testing
-            port='/tmp/ttyV0',
-            #port='/dev/ttyUSB0',
+            #port='/tmp/ttyV0',  # For testing with virtual serial ports
+            port='/dev/ttyINFICON',
             baudrate=9600,
             bytesize=serial.EIGHTBITS,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
-            timeout=1  # read timeout per call
+            timeout=1
         )
 
         self.last_state = ""
         self.current_layer = 1
 
     def send_command(self, cmd):
-        # Send command, wait for ACK/NAK, and print response if available
         full_command = cmd.encode('ascii') + ACK
         self.ser.write(full_command)
         logging.info(f"Sent: {cmd} + ACK")
@@ -58,7 +57,7 @@ class InficonReader(BaseReader):
                     logging.error("Receive timeout (no ACK/NAK)")
                     return "RECEIVE TIMEOUT (no ACK/NAK)"
                 else:
-                    break  # End if ACK received and no more data after timeout
+                    break
             else:
                 time.sleep(0.01)
 
@@ -67,15 +66,18 @@ class InficonReader(BaseReader):
         return decoded_response if decoded_response else "ACK Received (no response data)"
 
     def read(self):
-        # rate, power, thickness
         response = self.send_command("SL 0 " + str(self.current_layer))
         if response == "NAK Received":
             inficon_data = ["NAK"]
             self.current_layer += 1
             return inficon_data
-        inficon_data = [float(x) for x in response.split()]
-        #print(inficon_data)
+
+        try:
+            inficon_data = [float(x) for x in response.split()]
+        except ValueError:
+            logging.error(f"Could not parse response into floats: {response}")
+            inficon_data = [0.0]
         return inficon_data
-        
+
     def cleanup(self):
         self.ser.close()

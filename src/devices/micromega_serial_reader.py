@@ -2,66 +2,67 @@ import serial
 import time
 import logging
 from constants import *
+from devices.base_reader import BaseReader
 
-# Serial port and device settings
-PORT = '/dev/ttyUSB0'
 BAUDRATE = 9600
 RECOGNITION_CHAR = "*"
 
-class MicromegaReader:
-    def __init__(self):
+class MicromegaReader(BaseReader):
+    def __init__(self, port):
+        super().__init__(name=f"micromega_{port}")
+
         logging.basicConfig(
-            filename='data/granville_phillips_serial.log',
+            filename='data/micromega_serial.log',
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
 
         try:
             self.ser = serial.Serial(
-                port=PORT,
+                port=port,
                 baudrate=BAUDRATE,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE,
                 timeout=1
             )
-
         except serial.SerialException as e:
-            error_msg = f"Serial error on {PORT}: {e}"
+            error_msg = f"Serial error on {port}: {e}"
             print(error_msg)
             logging.error(error_msg)
-        
+            self.ser = None
 
     def send_command(self, cmd):
-        # Ensure command starts with "*"
-        if not cmd.startswith(RECOGNITION_CHAR):
-            full_cmd = f"{RECOGNITION_CHAR}{cmd}"
-        else:
-            full_cmd = user_input
+        if self.ser is None:
+            logging.error("Serial connection not established.")
+            return ""
 
-        # Ensure it ends with carriage return
+        # Ensure command starts with RECOGNITION_CHAR
+        full_cmd = cmd if cmd.startswith(RECOGNITION_CHAR) else RECOGNITION_CHAR + cmd
+        # Ensure ends with carriage return
         if not full_cmd.endswith('\r'):
             full_cmd += '\r'
 
-        # Send command
-        ser.write(full_cmd.encode())
-        ser.flush()
+        self.ser.write(full_cmd.encode())
+        self.ser.flush()
         logging.info(f"Sent: {repr(full_cmd)}")
 
-        # Wait and read response
-        #time.sleep(0.05)
-        #response = ser.read_until(b'\r')
-        response = ser.readline()
-        #print("Raw:", repr(response))
-
+        response = self.ser.readline()
         decoded = response.decode(errors='ignore').strip()
-        #print("Decoded:", decoded)
-        logging.info(f"Received: {response}")
-        return response
+        logging.info(f"Received: {decoded}")
+        return decoded
 
-    def get_data(self):
+    def read(self):
+        if self.ser is None:
+            return [0.0]
+
         response = self.send_command("V01")
-        return [float(response)]
+        try:
+            return [float(response)]
+        except ValueError:
+            logging.error(f"Could not parse response into float: {response}")
+            return [0.0]
 
-    def close_serial(self):
-        self.ser.close()
+    def cleanup(self):
+        if self.ser:
+            self.ser.close()
