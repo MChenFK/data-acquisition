@@ -68,16 +68,21 @@ class InficonReader(BaseReader):
     def read(self):
         response = self.send_command("SL 0 " + str(self.current_layer))
         if response == "NAK Received":
-            inficon_data = ["NAK"]
+            inficon_data = ["NAK", "NAK", "NAK"]
             self.current_layer += 1
+            if self.current_layer > 6:
+                self.current_layer = 1
             return inficon_data
 
         try:
-            inficon_data = [float(x) for x in response.split()]
-        except ValueError:
-            logging.error(f"Could not parse response into floats: {response}")
-            inficon_data = [0.0]
+            # Split response by whitespace, parse floats only for the first 3
+            parts = response.split()
+            inficon_data = [float(parts[i]) for i in range(3)]
+        except (ValueError, IndexError):
+            logging.error(f"Could not parse first 3 values into floats: {response}")
+            inficon_data = [0.0, 0.0, 0.0]
         return inficon_data
+
 
     def cleanup(self):
         self.ser.close()

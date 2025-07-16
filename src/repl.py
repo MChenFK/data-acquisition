@@ -33,11 +33,16 @@ class repl(QtWidgets.QMainWindow):
 
         temp_path = file_path
         count = 1
+        
         while os.path.isfile(temp_path + ".csv"):
             count += 1
             temp_path = file_path + f" ({count})"
+        
+        final_path = temp_path + ".csv"
+        with open("last_data_path.txt", "w") as f:
+            f.write(final_path)
 
-        self.csv_file = open("data_acquired.csv", mode='w', newline='')
+        self.csv_file = open(final_path, mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['timestamp'] + ITEMS)
 
@@ -95,11 +100,20 @@ class repl(QtWidgets.QMainWindow):
             QtWidgets.QApplication.quit()
             return
 
+        
         try:
             inputs = read_all(self.readers)
         except Exception as e:
             print(f"Read error: {e}")
             return
+        """
+        for reader in self.readers:
+            try:
+                data = reader.read()
+                print(f"Data from {reader.name}: {data}")
+            except Exception as e:
+                print(f"Error reading from {reader.name}: {e}")
+        """
 
         # If any 'NAK' is received from Inficon, keep previous values
         if isinstance(inputs[0], str) and inputs[0] == "NAK":

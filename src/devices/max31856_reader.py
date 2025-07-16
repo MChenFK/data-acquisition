@@ -20,7 +20,7 @@ class MAX31856Reader(BaseReader):
             return [self.sensor.read_temp_c()]
         except Exception as e:
             print(f"Error reading temperature: {e}")
-            return [float('nan')]
+            return [0.0]
 
     def cleanup(self):
         GPIO.cleanup()

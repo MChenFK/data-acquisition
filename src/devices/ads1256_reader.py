@@ -25,9 +25,10 @@ class ADS1256Reader(BaseReader):
             ADC_Value = self.adc.ADS1256_GetAll()
             for i in range(self.num_channels):
                 self.voltages[i] = ADC_Value[i] * 5.0 / 0x7fffff
-            return self.voltages
+            return [max(self.voltages)]
 
         except Exception as e:
+            return [0.0]
             raise RuntimeError(f"Failed to read from ADS1256: {e}")
 
     def cleanup(self):

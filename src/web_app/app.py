@@ -11,10 +11,19 @@ import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from constants import ITEMS
 
-FILE_NAME = "data.csv"
+def get_data_path():
+    try:
+        with open("last_data_path.txt", "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        print("Path file not found.")
+        return None
+
+
+FILE_NAME = get_data_path()
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-CSV_PATH = os.path.abspath(os.path.join(ROOT_DIR, 'data', FILE_NAME))
+CSV_PATH = os.path.abspath(os.path.join(ROOT_DIR, FILE_NAME))
 SENSOR_COLUMNS = ITEMS
 
 MAX_POINTS = 5000  # limit points
@@ -182,11 +191,16 @@ def render_tab(tab, data):
                     'overflowX': 'auto',
                     'backgroundColor': 'rgba(255, 255, 255, 0.3)',
                     'borderRadius': '5px',
+                    'maxHeight': '500px',
+                    'overflowY': 'auto',
                 },
                 style_header={
                     'backgroundColor': 'rgba(0, 51, 102, 0.7)',
                     'color': 'white',
-                    'fontWeight': 'bold'
+                    'fontWeight': 'bold',
+                    'position': 'sticky',
+                    'top': 0,
+                    'zIndex': 1,
                 },
                 style_cell={
                     'textAlign': 'left',
@@ -194,6 +208,7 @@ def render_tab(tab, data):
                     'backgroundColor': 'rgba(255, 255, 255, 0.2)',
                 },
             )
+
 
         ])
 
