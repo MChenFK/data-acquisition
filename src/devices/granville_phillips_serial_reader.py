@@ -58,7 +58,9 @@ class GranvillePhillipsReader(BaseReader):
 
         response = self.send_command("#RD")
         try:
+            response = response[2:]
             pressure = [float(response)]
+            #print(f"Pressure: {pressure}")
         except ValueError:
             logging.error(f"Could not parse response into float: {response}")
             pressure = [0.0]

@@ -106,14 +106,16 @@ class repl(QtWidgets.QMainWindow):
         except Exception as e:
             print(f"Read error: {e}")
             return
-        """
+        
+        # Comment out for no print
+        
         for reader in self.readers:
             try:
                 data = reader.read()
                 print(f"Data from {reader.name}: {data}")
             except Exception as e:
                 print(f"Error reading from {reader.name}: {e}")
-        """
+        
 
         # If any 'NAK' is received from Inficon, keep previous values
         if isinstance(inputs[0], str) and inputs[0] == "NAK":

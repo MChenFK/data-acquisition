@@ -70,7 +70,7 @@ class InficonReader(BaseReader):
         if response == "NAK Received":
             inficon_data = ["NAK", "NAK", "NAK"]
             self.current_layer += 1
-            if self.current_layer > 6:
+            if self.current_layer > 16:
                 self.current_layer = 1
             return inficon_data
 
