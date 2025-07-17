@@ -24,12 +24,14 @@ class ADS1256Reader(BaseReader):
         try:
             ADC_Value = self.adc.ADS1256_GetAll()
             for i in range(self.num_channels):
-                self.voltages[i] = ADC_Value[i] * 5.0 / 0x7fffff
+                self.voltages[i] = ADC_Value[i] * 5.0 / 0x7fffff * 100.0
+            self.voltages[1] = self.voltages[1]*1.0108-1.1189
+            self.voltages[2] = self.voltages[2]*1.0101-1.0603
             print(f"Voltages: {self.voltages}")
-            return [self.voltages[1]]
+            return self.voltages[1:3]
 
         except Exception as e:
-            return [0.0]
+            return [0.0, 0.0]
             raise RuntimeError(f"Failed to read from ADS1256: {e}")
 
     def cleanup(self):

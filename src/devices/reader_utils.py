@@ -1,6 +1,6 @@
 def read_all(readers):
     # Initialize all 8 outputs to fallback values
-    results = [0.0] * 8
+    results = [0.0] * 9
 
     for reader in readers:
         try:
@@ -27,8 +27,10 @@ def read_all(readers):
                 results[6] = data[0] if len(data) > 0 else 0.0  # NEUTRALIZATION CURRENT
 
             elif reader.name == "ads1256":
+                #print(data[0])
+                #print(data[1])
                 results[7] = data[0] if len(data) > 0 else 0.0  # GAS FLOW
-
+                results[8] = data[1] if len(data) > 0 else 0.0
             else:
                 print(f"Unknown device: {reader.name}")
 

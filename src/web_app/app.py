@@ -24,7 +24,18 @@ FILE_NAME = get_data_path()
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 CSV_PATH = os.path.abspath(os.path.join(ROOT_DIR, FILE_NAME))
-SENSOR_COLUMNS = ITEMS
+
+SENSOR_COLUMNS = [
+    "deposition rate (A/sec)",
+    "power (%)",
+    "pressure (Torr)",
+    "temperature (C)",
+    "crystal (kA)",
+    "anode current (amp)",
+    "neutralization current (amp)",
+    "gas flow (sccm)"
+]
+
 
 MAX_POINTS = 5000  # limit points
 
@@ -311,16 +322,34 @@ def update_all_graphs(selected_graphs, data, current_tab, all_zoom_data, all_zoo
         return layout_update
 
     for col in ordered_selected:
-        if col not in df.columns:
+        if col not in df.columns and col != "gas flow (sccm)":
             continue
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=df['timestamp'],
-            y=df[col],
-            mode='lines+markers',
-            name=col
-        ))
+
+        if col == "gas flow (sccm)":
+            fig.add_trace(go.Scatter(
+                x=df["timestamp"],
+                y=df["AR flow (sccm)"],
+                mode='lines+markers',
+                name="AR"
+            ))
+            fig.add_trace(go.Scatter(
+                x=df["timestamp"],
+                y=df["O2 flow (sccm)"],
+                mode='lines+markers',
+                name="O2",
+                line=dict(dash='dot', color='green')
+            ))
+        else:
+            fig.add_trace(go.Scatter(
+                x=df["timestamp"],
+                y=df[col],
+                mode='lines+markers',
+                name=col
+            ))
+
+
         fig.update_layout(
             title=col,
             margin=dict(l=30, r=10, t=40, b=30),
@@ -462,16 +491,33 @@ def update_single_graph(selected_col, data, relayout_data):
     if not data or selected_col is None:
         return go.Figure()
     df = pd.DataFrame(data)
-    if selected_col not in df.columns:
+    if selected_col not in df.columns and selected_col != "gas flow (sccm)":
         return go.Figure()
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=df['timestamp'],
-        y=df[selected_col],
-        mode='lines+markers',
-        name=selected_col
-    ))
+
+    if selected_col == "gas flow (sccm)":
+        fig.add_trace(go.Scatter(
+            x=df["timestamp"],
+            y=df["AR flow (sccm)"],
+            mode='lines+markers',
+            name="AR"
+        ))
+        fig.add_trace(go.Scatter(
+            x=df["timestamp"],
+            y=df["O2 flow (sccm)"],
+            mode='lines+markers',
+            name="O2",
+            line=dict(dash='dot', color='green')
+        ))
+    else:
+        fig.add_trace(go.Scatter(
+            x=df["timestamp"],
+            y=df[selected_col],
+            mode='lines+markers',
+            name=selected_col
+        ))
+
 
     fig.update_layout(
         title=selected_col,

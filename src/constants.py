@@ -23,7 +23,8 @@ ITEMS = [
     "crystal (kA)",
     "anode current (amp)",
     "neutralization current (amp)",
-    "gas flow (sccm)"
+    "AR flow (sccm)",
+    "O2 flow (sccm)"
 ]
 
 RATE = 0

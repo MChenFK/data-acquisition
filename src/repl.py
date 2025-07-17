@@ -70,20 +70,31 @@ class repl(QtWidgets.QMainWindow):
         # Initialize plot data
         self.plots = []
         self.curves = []
-        self.y_data = [[] for _ in range(self.num_plots)]
+        self.y_data = [[] for _ in range(self.num_plots + 1)]
         self.x_data = []
 
         colors = [RED, GREEN, BLUE, PURPLE, ORANGE, CYAN, MAGENTA, PINK]
         for i in range(self.num_plots):
+            if i == 8:
+                # Skip plot creation for index 8; we will plot it with index 9
+                continue
             row = i // 2
             col = i % 2
-            p = self.plot_widget.addPlot(row=row, col=col, title=ITEMS[i])
-            p.setLabel('left', ITEMS[i])
+            p = self.plot_widget.addPlot(row=row, col=col, title=ITEMS[i] if i != 9 else f"{ITEMS[8]} & {ITEMS[9]}")
+            p.setLabel('left', ITEMS[i] if i != 9 else f"{ITEMS[8]} & {ITEMS[9]}")
             p.setLabel('bottom', 'Time (s)')
             p.showGrid(x=True, y=True)
-            curve = p.plot(pen=pg.mkPen(color=colors[i % len(colors)], width=2))
+            
+            curve1 = p.plot(pen=pg.mkPen(color=colors[i % len(colors)], width=2))
+            self.curves.append(curve1)
+            
+            if i == 9:
+                # Add second curve to the same plot
+                curve2 = p.plot(pen=pg.mkPen(color=colors[(i+1) % len(colors)], width=2, style=QtCore.Qt.DashLine))
+                self.curves.append(curve2)
+    
             self.plots.append(p)
-            self.curves.append(curve)
+
 
         # Setup timer
         self.timer = QtCore.QTimer()
@@ -124,16 +135,27 @@ class repl(QtWidgets.QMainWindow):
             if hasattr(self, "last_inputs"):
                 inputs = self.last_inputs
             else:
-                inputs = [0.0] * self.num_plots
+                inputs = [0.0] * (self.num_plots + 1)
         else:
             self.last_inputs = inputs  # Store current for future fallback
 
         current_time = time.time() - self.start_time
         self.x_data.append(current_time)
 
-        for i in range(self.num_plots):
+        for i in range(self.num_plots + 1):
             self.y_data[i].append(inputs[i])
-            self.curves[i].setData(self.x_data, self.y_data[i])
+
+        # Plot each curve
+        for i in range(self.num_plots + 1):
+            if i == 8:
+                continue  # handled below
+            elif i == 9:
+                # Plot both 8 and 9 on the same graph
+                self.curves[i - 1].setData(self.x_data, self.y_data[8])  # First curve
+                self.curves[i].setData(self.x_data, self.y_data[9])      # Second curve
+            else:
+                self.curves[i].setData(self.x_data, self.y_data[i])
+
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.csv_writer.writerow([timestamp] + inputs)
@@ -143,7 +165,7 @@ class repl(QtWidgets.QMainWindow):
         max_points = 100
         if len(self.x_data) > max_points:
             self.x_data = self.x_data[-max_points:]
-            for i in range(self.num_plots):
+            for i in range(self.num_plots + 1):
                 self.y_data[i] = self.y_data[i][-max_points:]
 
 
