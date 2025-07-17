@@ -76,7 +76,6 @@ class repl(QtWidgets.QMainWindow):
         colors = [RED, GREEN, BLUE, PURPLE, ORANGE, CYAN, MAGENTA, PINK]
         for i in range(self.num_plots):
             if i == 8:
-                # Skip plot creation for index 8; we will plot it with index 9
                 continue
             row = i // 2
             col = i % 2
@@ -89,7 +88,6 @@ class repl(QtWidgets.QMainWindow):
             self.curves.append(curve1)
             
             if i == 9:
-                # Add second curve to the same plot
                 curve2 = p.plot(pen=pg.mkPen(color=colors[(i+1) % len(colors)], width=2, style=QtCore.Qt.DashLine))
                 self.curves.append(curve2)
     
