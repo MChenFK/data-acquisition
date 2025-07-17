@@ -70,7 +70,7 @@ class repl(QtWidgets.QMainWindow):
         # Initialize plot data
         self.plots = []
         self.curves = []
-        self.y_data = [[] for _ in range(self.num_plots + 1)]
+        self.y_data = [[] for _ in range(self.num_plots)]
         self.x_data = []
 
         colors = [RED, GREEN, BLUE, PURPLE, ORANGE, CYAN, MAGENTA, PINK]
@@ -135,18 +135,19 @@ class repl(QtWidgets.QMainWindow):
             if hasattr(self, "last_inputs"):
                 inputs = self.last_inputs
             else:
-                inputs = [0.0] * (self.num_plots + 1)
+                inputs = [0.0] * (self.num_plots)
         else:
             self.last_inputs = inputs  # Store current for future fallback
 
         current_time = time.time() - self.start_time
         self.x_data.append(current_time)
+        print(inputs)
 
-        for i in range(self.num_plots + 1):
+        for i in range(self.num_plots):
             self.y_data[i].append(inputs[i])
 
         # Plot each curve
-        for i in range(self.num_plots + 1):
+        for i in range(self.num_plots):
             if i == 8:
                 continue  # handled below
             elif i == 9:
@@ -165,7 +166,7 @@ class repl(QtWidgets.QMainWindow):
         max_points = 100
         if len(self.x_data) > max_points:
             self.x_data = self.x_data[-max_points:]
-            for i in range(self.num_plots + 1):
+            for i in range(self.num_plots):
                 self.y_data[i] = self.y_data[i][-max_points:]
 
 
