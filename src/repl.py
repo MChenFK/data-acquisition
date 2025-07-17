@@ -139,7 +139,7 @@ class repl(QtWidgets.QMainWindow):
 
         current_time = time.time() - self.start_time
         self.x_data.append(current_time)
-        print(inputs)
+        #print(inputs)
 
         for i in range(self.num_plots):
             self.y_data[i].append(inputs[i])
