@@ -1,5 +1,4 @@
 def read_all(readers):
-    # Initialize all 8 outputs to fallback values
     results = [0.0] * 9
 
     for reader in readers:
@@ -9,7 +8,6 @@ def read_all(readers):
                 data = [data]
 
             if reader.name == "inficon_IC/5":
-                # We expect rate, power, thickness/crystal
                 results[0] = data[0] if len(data) > 0 else 0.0  # RATE
                 results[1] = data[1] if len(data) > 1 else 0.0  # POWER
                 results[4] = data[2] if len(data) > 2 else 0.0  # CRYSTAL
@@ -36,6 +34,5 @@ def read_all(readers):
 
         except Exception as e:
             print(f"Error reading from {reader.name}: {e}")
-            # Leave default value (0.0)
 
     return results

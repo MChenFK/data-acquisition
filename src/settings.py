@@ -10,7 +10,7 @@ class SettingsDialog(QDialog):
         self.file_name = QLineEdit()
         self.refresh_interval = QLineEdit()
         self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.validate_and_accept)  # <-- use validation
+        self.ok_button.clicked.connect(self.validate_and_accept)
 
         form_layout = QFormLayout()
         form_layout.addRow("File Name (Default yyyy-mm-dd):", self.file_name)
@@ -37,7 +37,6 @@ class SettingsDialog(QDialog):
                 self._show_error("Refresh interval must be a non-negative integer.")
                 return
 
-        # All good
         self.accept()
 
     def _show_error(self, message):

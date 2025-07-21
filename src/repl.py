@@ -129,7 +129,7 @@ class repl(QtWidgets.QMainWindow):
         # If any 'NAK' is received from Inficon, keep previous values
         if isinstance(inputs[0], str) and inputs[0] == "NAK":
             print("Received NAK — using previous Inficon data")
-            # Fall back to previous values (if any)
+            # Fall back to previous values
             if hasattr(self, "last_inputs"):
                 inputs = self.last_inputs
             else:
@@ -147,11 +147,11 @@ class repl(QtWidgets.QMainWindow):
         # Plot each curve
         for i in range(self.num_plots):
             if i == 8:
-                continue  # handled below
+                continue
             elif i == 9:
                 # Plot both 8 and 9 on the same graph
-                self.curves[i - 1].setData(self.x_data, self.y_data[8])  # First curve
-                self.curves[i].setData(self.x_data, self.y_data[9])      # Second curve
+                self.curves[i - 1].setData(self.x_data, self.y_data[8])
+                self.curves[i].setData(self.x_data, self.y_data[9])
             else:
                 self.curves[i].setData(self.x_data, self.y_data[i])
 

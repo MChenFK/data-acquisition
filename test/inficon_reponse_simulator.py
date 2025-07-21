@@ -1,8 +1,7 @@
 import serial
 import time
 
-# Change this to the virtual port to listen on
-PORT = '/tmp/ttyV1'  # or '/dev/pts/6' on Linux/Mac
+PORT = '/tmp/ttyV1'
 
 ACK = b'\x06'
 NAK = b'\x15'

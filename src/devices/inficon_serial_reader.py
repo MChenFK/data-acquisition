@@ -7,7 +7,7 @@ from devices.base_reader import BaseReader
 
 class InficonReader(BaseReader):
     def __init__(self):
-        super().__init__("inficon_IC/5")  # Initialize BaseReader with the reader name
+        super().__init__("inficon_IC/5")
 
         logging.basicConfig(
             filename='data/inficon_serial.log',
@@ -16,7 +16,7 @@ class InficonReader(BaseReader):
         )
 
         self.ser = serial.Serial(
-            #port='/tmp/ttyV0',  # For testing with virtual serial ports
+            #port='/tmp/ttyV0',
             port='/dev/ttyINFICON',
             baudrate=9600,
             bytesize=serial.EIGHTBITS,
@@ -66,7 +66,9 @@ class InficonReader(BaseReader):
         return decoded_response if decoded_response else "ACK Received (no response data)"
 
     def read(self):
+        print(f"Checking Layer: {self.current_layer}")
         response = self.send_command("SL 0 " + str(self.current_layer))
+        print(f"Raw Inficon Response: {response}")
         if response == "NAK Received":
             inficon_data = ["NAK", "NAK", "NAK"]
             self.current_layer += 1
@@ -75,7 +77,6 @@ class InficonReader(BaseReader):
             return inficon_data
 
         try:
-            # Split response by whitespace, parse floats only for the first 3
             parts = response.split()
             inficon_data = [float(parts[i]) for i in range(3)]
         except (ValueError, IndexError):

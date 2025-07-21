@@ -5,7 +5,7 @@ from .base_reader import BaseReader
 
 class ADS1256Reader(BaseReader):
     def __init__(self, differential=False):
-        super().__init__("ads1256")  # Initialize BaseReader with a name
+        super().__init__("ads1256")
 
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
@@ -18,7 +18,7 @@ class ADS1256Reader(BaseReader):
 
         self.num_channels = 8
         self.voltages = [0] * self.num_channels
-        self.differential = differential  # Optionally store if you want to use later
+        self.differential = differential
 
     def read(self):
         try:

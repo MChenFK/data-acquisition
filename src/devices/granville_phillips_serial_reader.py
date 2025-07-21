@@ -6,7 +6,7 @@ from devices.base_reader import BaseReader
 
 class GranvillePhillipsReader(BaseReader):
     def __init__(self):
-        super().__init__("granville_phillips_350")  # Initialize BaseReader with the reader name
+        super().__init__("granville_phillips_350")
 
         logging.basicConfig(
             filename='data/granville_phillips_serial.log',
@@ -30,7 +30,7 @@ class GranvillePhillipsReader(BaseReader):
             error_msg = f"Serial error on /dev/ttyGP350: {e}"
             print(error_msg)
             logging.error(error_msg)
-            self.ser = None  # Mark serial as None to prevent usage if failed
+            self.ser = None
 
     def send_command(self, cmd):
         if self.ser is None:

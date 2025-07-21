@@ -5,7 +5,7 @@ from devices.base_reader import BaseReader
 
 class MAX31856Reader(BaseReader):
     def __init__(self, spi_port=0, spi_device=1):
-        super().__init__("max31856")  # Initialize BaseReader with name
+        super().__init__("max31856")
 
         try:
             self.sensor = MAX31856(
