@@ -28,13 +28,13 @@ class FileDialog(QWidget):
         self.input = QLineEdit(default_path)
         layout.addWidget(self.input)
 
-        browse = QPushButton("Browse...")
-        browse.clicked.connect(self.browse_file)
-        layout.addWidget(browse)
+        self.browse = QPushButton("Browse...")
+        self.browse.clicked.connect(self.browse_file)
+        layout.addWidget(self.browse)
 
-        ok = QPushButton("Start Server")
-        ok.clicked.connect(self.ok_clicked)
-        layout.addWidget(ok)
+        self.ok = QPushButton("Start Server")
+        self.ok.clicked.connect(self.ok_clicked)
+        layout.addWidget(self.ok)
 
         self.setLayout(layout)
 
@@ -46,5 +46,12 @@ class FileDialog(QWidget):
     def ok_clicked(self):
         file_name = self.input.text()
         if file_name:
+            # Disable all UI elements to make the app uninteractable
+            self.ok.setEnabled(False)
+            self.input.setEnabled(False)
+            self.browse.setEnabled(False)  # Disable the "Browse" button
+
+            # Emit the signal to start the server
             self.file_selected.emit(file_name)
+
 
