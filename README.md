@@ -32,7 +32,7 @@
      - Place inside data_acquisition_venv/lib/python(version)
      - https://www.waveshare.com/wiki/High-Precision_AD/DA_Board
      - 
-2. Place icon on desktop and link to shell file and png
+2. Place .desktop file on desktop and link to shell file and icon png
    - Do for both data collector and web app
 3. Click on newly created data collector shortcut
    - Runs ./run_data_acquisition.sh
