@@ -29,9 +29,9 @@
      - source data_acquisition_venv/bin/activate
    - Run pip install -r requirements.txt
    - Manually download ADS1256 and MAX31856 libraries
-     - Place inside data_acquisition_venv/lib/python(version)
+     - Place inside data-acquisition/src/devices/drivers
      - https://www.waveshare.com/wiki/High-Precision_AD/DA_Board
-     - 
+     - https://github.com/johnrbnsn/Adafruit_Python_MAX31856
 2. Place .desktop file on desktop and link to shell file and icon png
    - Do for both data collector and web app
 3. Click on newly created data collector shortcut
