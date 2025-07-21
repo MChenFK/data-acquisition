@@ -3,6 +3,7 @@
 ## Hardware:
 - Raspberry Pi 4 Model B
 - ADS1256 Analog to Digital Converter
+  - DB25 Connector
   - MKS 247
 - MAX31856 Thermocouple Reader
   - Type K Thermocouple
@@ -18,15 +19,34 @@
 - Adafruit MAX31856 library
 
 ## Steps:
+1. Clone repository
+   - Navigate to desired directory on pi
+   - git clone https://github.com/MChenFK/data-acquisition
 1. Install requirements
+   - Inside project root directory, create python virtual environment
+     - python -m venv data_acquisition_venv
+   - Activate python virtual environment
+     - source data_acquisition_venv/bin/activate
    - Run pip install -r requirements.txt
    - Manually download ADS1256 and MAX31856 libraries
-2. Place icon on desktop and link to shell file and png
-3. Click on icon
+     - Place inside data-acquisition/src/devices/drivers
+     - https://www.waveshare.com/wiki/High-Precision_AD/DA_Board
+     - https://github.com/johnrbnsn/Adafruit_Python_MAX31856
+2. Place .desktop file on desktop and link to shell file and icon png
+   - Do for both data collector and web app
+3. Click on newly created data collector shortcut
    - Runs ./run_data_acquisition.sh
      - Activates virtual environment
      - Runs src/main.py
-     - Runs src/web_app/app.py
+4. Enter file name for csv file and interval for collection
+   - Defaults to date for csv file and 10 seconds for interval
+   - Results may vary with lower intervals
+5. Click start on data collector
+6. Click on newly created web app shortcut
+     - Runs ./run_web_app.sh
+        - Runs src/web_app/app.py
+7. Open localhost on browser
+  - http://(Raspberry Pi IP):(Port Number)
 
 ## Troubleshooting:
 1. Make sure cables are hooked up correctly
