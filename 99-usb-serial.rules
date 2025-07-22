@@ -1,0 +1,5 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", SYMLINK+="ttyINFICON"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0557", ATTRS{idProduct}=="2008", SYMLINK+="ttyGP350"
+SUBSYSTEM=="tty", ATTRS{serial}=="BG00ORXY", SYMLINK+="ttyMICROMEGA1"
+SUBSYSTEM=="tty", ATTRS{serial}=="BG00PA11", SYMLINK+="ttyMICROMEGA2"
+
