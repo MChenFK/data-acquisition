@@ -82,8 +82,30 @@ class InficonReader(BaseReader):
         except (ValueError, IndexError):
             logging.error(f"Could not parse first 3 values into floats: {response}")
             inficon_data = [0.0, 0.0, 0.0]
+            self.restart_serial()
+            logging.info(f"Restarting Inficon connection")
         return inficon_data
 
+    def restart_serial(self):
+        if self.ser:
+            self.ser.close()
+        
+        try:
+            self.ser = serial.Serial(
+                #port='/tmp/ttyV0',
+                port='/dev/ttyINFICON',
+                baudrate=9600,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE,
+                timeout=1
+            )
+        except serial.SerialException as e:
+            error_msg = f"Serial error on /dev/ttyINFICON: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            self.ser = None
 
     def cleanup(self):
-        self.ser.close()
+        if self.ser:
+            self.ser.close()

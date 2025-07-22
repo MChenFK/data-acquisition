@@ -1,1 +1,1 @@
-data/2025-07-21 (4).csv
+/home/mebryan/workspace/github.com/MChenFK/data-acquisition/data/2025-07-22 (4).csv

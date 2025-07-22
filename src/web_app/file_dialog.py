@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout,
-    QLineEdit, QPushButton, QFileDialog
+    QLineEdit, QPushButton, QFileDialog, QMessageBox
 )
 from PySide6.QtCore import Signal
 import os
@@ -43,15 +43,39 @@ class FileDialog(QWidget):
         if file_name:
             self.input.setText(file_name)
 
+    import os
+
     def ok_clicked(self):
-        file_name = self.input.text()
-        if file_name:
-            # Disable all UI elements to make the app uninteractable
-            self.ok.setEnabled(False)
-            self.input.setEnabled(False)
-            self.browse.setEnabled(False)  # Disable the "Browse" button
+        file_name = self.input.text().strip()
+        if not file_name:
+            return
 
-            # Emit the signal to start the server
-            self.file_selected.emit(file_name)
+        if os.path.isabs(file_name) and os.path.isfile(file_name):
+            full_path = file_name
+        else:
+            # Get path to project root (../.. from src/web_app)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+            if file_name.startswith("data/"):
+                data_dir = project_root
+            else:
+                data_dir = os.path.join(project_root, "data")
+            candidate_path = os.path.normpath(os.path.join(data_dir, file_name))
 
+            if os.path.isfile(candidate_path):
+                full_path = candidate_path
+            else:
+                QMessageBox.warning(
+                    self,
+                    "File Not Found",
+                    f"Could not find file:\n\n{file_name}\n\nChecked:\n{candidate_path}"
+                )
+                return
+
+        # Disable interaction
+        self.ok.setEnabled(False)
+        self.input.setEnabled(False)
+        self.browse.setEnabled(False)
+
+        self.file_selected.emit(full_path)
 

@@ -61,7 +61,28 @@ class MicromegaReader(BaseReader):
             return [float(response)]
         except ValueError:
             logging.error(f"Could not parse response into float: {response}")
+            self.restart_serial
+            logging.info(f"Restarting Micromega connection")
             return [0.0]
+
+    def restart_serial(self):
+        if self.ser:
+            self.ser.close()
+
+        try:
+            self.ser = serial.Serial(
+                port=port,
+                baudrate=BAUDRATE,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE,
+                timeout=1
+            )
+        except serial.SerialException as e:
+            error_msg = f"Serial error on {port}: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            self.ser = None
 
     def cleanup(self):
         if self.ser:

@@ -64,7 +64,32 @@ class GranvillePhillipsReader(BaseReader):
         except ValueError:
             logging.error(f"Could not parse response into float: {response}")
             pressure = [0.0]
+            self.restart_serial()
         return pressure
+
+    def restart_serial(self):
+        if self.ser:
+            self.ser.close()
+
+        try:
+            self.ser = serial.Serial(
+                #port='/tmp/ttyV0',
+                port='/dev/ttyGP350',
+                baudrate=9600,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE,
+                timeout=1,
+                rtscts=True,
+                dsrdtr=True
+            )
+        except serial.SerialException as e:
+            error_msg = f"Serial error on /dev/ttyGP350: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            logging.info(f"Restarting Granville Phillips connection")
+            self.ser = None
+        
 
     def cleanup(self):
         if self.ser:
