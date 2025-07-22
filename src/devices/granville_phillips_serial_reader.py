@@ -9,7 +9,7 @@ class GranvillePhillipsReader(BaseReader):
         super().__init__("granville_phillips_350")
 
         logging.basicConfig(
-            filename='data/granville_phillips_serial.log',
+            filename='data/serial_command.log',
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
