@@ -16,10 +16,11 @@ class MicromegaReader(BaseReader):
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
+        self.port = port
 
         try:
             self.ser = serial.Serial(
-                port=port,
+                port=self.port,
                 baudrate=BAUDRATE,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
@@ -27,7 +28,7 @@ class MicromegaReader(BaseReader):
                 timeout=1
             )
         except serial.SerialException as e:
-            error_msg = f"Serial error on {port}: {e}"
+            error_msg = f"Serial error on {self.port}: {e}"
             print(error_msg)
             logging.error(error_msg)
             self.ser = None
@@ -61,8 +62,8 @@ class MicromegaReader(BaseReader):
             return [float(response)]
         except ValueError:
             logging.error(f"Could not parse response into float: {response}")
-            self.restart_serial
-            logging.info(f"Restarting Micromega connection")
+            self.restart_serial()
+            logging.info(f"Restarting Micromega connection for {self.port}")
             return [0.0]
 
     def restart_serial(self):
@@ -71,7 +72,7 @@ class MicromegaReader(BaseReader):
 
         try:
             self.ser = serial.Serial(
-                port=port,
+                port=self.port,
                 baudrate=BAUDRATE,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
@@ -79,7 +80,7 @@ class MicromegaReader(BaseReader):
                 timeout=1
             )
         except serial.SerialException as e:
-            error_msg = f"Serial error on {port}: {e}"
+            error_msg = f"Serial error on {self.port}: {e}"
             print(error_msg)
             logging.error(error_msg)
             self.ser = None
