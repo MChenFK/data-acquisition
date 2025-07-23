@@ -134,6 +134,14 @@ class repl(QtWidgets.QMainWindow):
                 inputs = self.last_inputs
             else:
                 inputs = [0.0] * (self.num_plots)
+        # If 'TIMEOUT' is received from Inficon, keep previous values
+        elif isinstance(inputs[0], str) and inputs[0] == "TIMEOUT":
+            print("Received TIMEOUT — using previous Inficon data")
+            # Fall back to previous values
+            if hasattr(self, "last_inputs"):
+                inputs = self.last_inputs
+            else:
+                inputs = [0.0] * (self.num_plots)
         else:
             self.last_inputs = inputs  # Store current for future fallback
 

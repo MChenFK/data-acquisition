@@ -81,7 +81,7 @@ class InficonReader(BaseReader):
             inficon_data = [float(parts[i]) for i in range(3)]
         except (ValueError, IndexError):
             logging.error(f"Could not parse first 3 values into floats: {response}")
-            inficon_data = [0.0, 0.0, 0.0]
+            inficon_data = ["TIMEOUT", "TIMEOUT", "TIMEOUT"]
             self.restart_serial()
             logging.info(f"Restarting Inficon connection")
         return inficon_data

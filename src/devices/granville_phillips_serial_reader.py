@@ -61,6 +61,9 @@ class GranvillePhillipsReader(BaseReader):
             response = response[2:]
             pressure = [float(response)]
             #print(f"Pressure: {pressure}")
+            if pressure[0] > 1000:
+                print(f"Granville Phillips offline")
+                pressure = [0.0]
         except ValueError:
             logging.error(f"Could not parse response into float: {response}")
             pressure = [0.0]
