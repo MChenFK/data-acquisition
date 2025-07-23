@@ -26,15 +26,15 @@ class repl(QtWidgets.QMainWindow):
         data_dir = os.path.join(BASE_DIR, "../")
         os.makedirs(data_dir, exist_ok=True)
 
-        file_path = "data/" + datetime.now().strftime('%Y-%m-%d')
+        file_path = datetime.now().strftime('%Y-%m-%d')
         rename = config.settings.get("file_name")
         if rename:
-            file_path = "data/" + rename
+            file_path = rename
 
         temp_path = file_path
         count = 1
         
-        while os.path.isfile(temp_path + ".csv"):
+        while os.path.isfile("data/" + temp_path + ".csv"):
             count += 1
             temp_path = file_path + f" ({count})"
         
@@ -42,7 +42,7 @@ class repl(QtWidgets.QMainWindow):
         with open("last_data_path.txt", "w") as f:
             f.write(final_path)
 
-        self.csv_file = open(final_path, mode='w', newline='')
+        self.csv_file = open("data/" + final_path, mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['timestamp'] + ITEMS)
 

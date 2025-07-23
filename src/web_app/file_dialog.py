@@ -56,10 +56,7 @@ class FileDialog(QWidget):
             # Get path to project root (../.. from src/web_app)
             script_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
-            if file_name.startswith("data/"):
-                data_dir = project_root
-            else:
-                data_dir = os.path.join(project_root, "data")
+            data_dir = os.path.join(project_root, "data")
             candidate_path = os.path.normpath(os.path.join(data_dir, file_name))
 
             if os.path.isfile(candidate_path):
