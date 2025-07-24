@@ -82,7 +82,8 @@ app.layout = html.Div([
         html.Div(
             dcc.Tabs(id='tabs', value='tab-all', children=[
                 dcc.Tab(label='All Graphs', value='tab-all'),
-                dcc.Tab(label='Single Graph View', value='tab-single'),
+                dcc.Tab(label='Single Graph', value='tab-single'),
+                dcc.Tab(label='Overlay Graph', value='tab-overlay'),
                 dcc.Tab(label='CSV Table', value='tab-table'),
             ]),
             style={'padding': '10px'},
@@ -175,6 +176,24 @@ def render_tab(tab, data):
                 html.Button("Previous", id='prev-graph', n_clicks=0),
                 html.Button("Next", id='next-graph', n_clicks=0),
             ], style={'display': 'flex', 'gap': '10px', 'justifyContent': 'center', 'padding': '10px'})
+        ])
+
+    elif tab == 'tab-overlay':
+        return html.Div([
+            html.Div([
+                html.Label("Select Graphs to Overlay:"),
+                dcc.Checklist(
+                    id='overlay-graph-selector',
+                    options=[{'label': col, 'value': col} for col in SENSOR_COLUMNS],
+                    value=["deposition rate (A/sec)", "temperature (C)"],  # defaults
+                    labelStyle={'display': 'inline-block', 'marginRight': '15px'}
+                )
+            ], style={'padding': '10px'}),
+
+            dcc.Graph(
+                id='overlay-graph',
+                style={'height': '500px', 'width': '100%'}
+            )
         ])
 
     elif tab == 'tab-table':
@@ -545,6 +564,75 @@ def update_single_graph(selected_col, data, relayout_data):
             fig.update_yaxes(range=y_range)
 
     return fig
+
+@app.callback(
+    Output('overlay-graph', 'figure'),
+    Input('overlay-graph-selector', 'value'),
+    Input('data-store', 'data')
+)
+def update_overlay_graph(selected_columns, data):
+    if not data or not selected_columns:
+        fig = go.Figure()
+        fig.update_layout(
+            title="No data selected",
+            paper_bgcolor='rgba(255,255,255,0.5)',
+            plot_bgcolor='rgba(255,255,255,0)',
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            margin=dict(l=30, r=10, t=40, b=30),
+        )
+        return fig
+
+
+    df = pd.DataFrame(data)
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+    fig = go.Figure()
+
+    color_cycle = [
+        "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
+        "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"
+    ]
+
+    for i, col in enumerate(selected_columns):
+        if col not in df.columns and col != "gas flow (sccm)":
+            continue
+
+        if col == "gas flow (sccm)":
+            fig.add_trace(go.Scatter(
+                x=df["timestamp"],
+                y=df["AR flow (sccm)"],
+                mode='lines+markers',
+                name="AR",
+                line=dict(color=color_cycle[i % len(color_cycle)])
+            ))
+            fig.add_trace(go.Scatter(
+                x=df["timestamp"],
+                y=df["O2 flow (sccm)"],
+                mode='lines+markers',
+                name="O2",
+                line=dict(dash='dot', color='green')
+            ))
+        else:
+            fig.add_trace(go.Scatter(
+                x=df["timestamp"],
+                y=df[col],
+                mode='lines+markers',
+                name=col,
+                line=dict(color=color_cycle[i % len(color_cycle)])
+            ))
+
+    fig.update_layout(
+        title="Overlay Graph",
+        margin=dict(l=30, r=10, t=40, b=30),
+        paper_bgcolor='rgba(255,255,255,0.5)',
+        plot_bgcolor='rgba(255,255,255,0)',
+        xaxis_title="Timestamp",
+        yaxis_title="Sensor Values"
+    )
+
+    return fig
+
 
 @app.callback(
     Output('page-size-store', 'data'),

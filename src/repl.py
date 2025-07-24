@@ -131,12 +131,15 @@ class repl(QtWidgets.QMainWindow):
             print("Received NAK — using previous Inficon data")
             # Fall back to previous values
             if hasattr(self, "last_inputs"):
-                inputs = self.last_inputs
+                #inputs = self.last_inputs
                 """
                 inputs[0] = self.last_inputs[0]
                 inputs[1] = self.last_inputs[1]
                 inputs[4] = self.last_inputs[4]
                 """
+                for i in range(len(inputs)):
+                    if i != 3:
+                        inputs[i] = self.last_inputs[i]
             else:
                 inputs = [0.0] * (self.num_plots)
         # If 'TIMEOUT' is received from Inficon, keep previous values
@@ -144,12 +147,15 @@ class repl(QtWidgets.QMainWindow):
             print("Received TIMEOUT — using previous Inficon data")
             # Fall back to previous values
             if hasattr(self, "last_inputs"):
-                inputs = self.last_inputs
+                #inputs = self.last_inputs
                 """
                 inputs[0] = self.last_inputs[0]
                 inputs[1] = self.last_inputs[1]
                 inputs[4] = self.last_inputs[4]
                 """
+                for i in range(len(inputs)):
+                    if i != 3:
+                        inputs[i] = self.last_inputs[i]
             else:
                 inputs = [0.0] * (self.num_plots)
         else:
