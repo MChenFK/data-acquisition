@@ -185,14 +185,15 @@ def render_tab(tab, data):
                 dcc.Checklist(
                     id='overlay-graph-selector',
                     options=[{'label': col, 'value': col} for col in SENSOR_COLUMNS],
-                    value=["deposition rate (A/sec)", "temperature (C)"],  # defaults
+                    value=["temperature (C)", "anode current (amp)"],  # defaults
                     labelStyle={'display': 'inline-block', 'marginRight': '15px'}
                 )
             ], style={'padding': '10px'}),
 
             dcc.Graph(
                 id='overlay-graph',
-                style={'height': '500px', 'width': '100%'}
+                style={'height': '500px', 'width': '100%'},
+                clear_on_unhover=False,
             )
         ])
 
@@ -371,10 +372,20 @@ def update_all_graphs(selected_graphs, data, current_tab, all_zoom_data, all_zoo
 
         fig.update_layout(
             title=col,
+            hovermode='x',
             margin=dict(l=30, r=10, t=40, b=30),
             paper_bgcolor='rgba(255,255,255,0.5)',
             plot_bgcolor='rgba(255,255,255,0)',
+            xaxis=dict(
+                showspikes=True,
+                spikemode='across',
+                spikesnap='cursor',
+                spikethickness=1,
+                spikecolor='rgba(255,255,255,0)'
+            ),
+            yaxis=dict(showspikes=False),
         )
+
 
         zoom_data = zoom_map.get(col)
         if zoom_data:
@@ -540,10 +551,22 @@ def update_single_graph(selected_col, data, relayout_data):
 
     fig.update_layout(
         title=selected_col,
+        hovermode='x',
         margin=dict(l=30, r=10, t=40, b=30),
         paper_bgcolor='rgba(255,255,255,0.5)',
         plot_bgcolor='rgba(255,255,255,0)',
+        xaxis=dict(
+            showspikes=True,
+            spikemode='across',
+            spikesnap='cursor',
+            spikethickness=1,
+            spikecolor='rgba(255,255,255,0)',
+        ),
+        yaxis=dict(
+            showspikes=False
+        )
     )
+
 
     # Determine initial zoom range for last 100 points (if enough points)
     if len(df) > 100:
@@ -568,21 +591,12 @@ def update_single_graph(selected_col, data, relayout_data):
 @app.callback(
     Output('overlay-graph', 'figure'),
     Input('overlay-graph-selector', 'value'),
-    Input('data-store', 'data')
+    Input('data-store', 'data'),
+    State('overlay-graph', 'relayoutData'),
 )
-def update_overlay_graph(selected_columns, data):
+def update_overlay_graph(selected_columns, data, relayout_data):
     if not data or not selected_columns:
-        fig = go.Figure()
-        fig.update_layout(
-            title="No data selected",
-            paper_bgcolor='rgba(255,255,255,0.5)',
-            plot_bgcolor='rgba(255,255,255,0)',
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            margin=dict(l=30, r=10, t=40, b=30),
-        )
-        return fig
-
+        return go.Figure()
 
     df = pd.DataFrame(data)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -624,14 +638,37 @@ def update_overlay_graph(selected_columns, data):
 
     fig.update_layout(
         title="Overlay Graph",
+        hovermode='x',
         margin=dict(l=30, r=10, t=40, b=30),
         paper_bgcolor='rgba(255,255,255,0.5)',
         plot_bgcolor='rgba(255,255,255,0)',
         xaxis_title="Timestamp",
-        yaxis_title="Sensor Values"
+        yaxis_title="Sensor Values",
+        xaxis=dict(
+            showspikes=True,
+            spikemode='across',
+            spikesnap='cursor',
+            spikethickness=1,
+            spikecolor='rgba(255,255,255,0)',
+        ),
+        yaxis=dict(
+            showspikes=False
+        )
     )
 
+    # Apply user zoom if exists
+    if relayout_data:
+        x_range = relayout_data.get("xaxis.range[0]"), relayout_data.get("xaxis.range[1]")
+        y_range = relayout_data.get("yaxis.range[0]"), relayout_data.get("yaxis.range[1]")
+
+        if all(x_range):
+            fig.update_xaxes(range=x_range)
+        if all(y_range):
+            fig.update_yaxes(range=y_range)
+
     return fig
+
+
 
 
 @app.callback(
